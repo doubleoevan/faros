@@ -114,8 +114,8 @@ faros/
 The mock server source lives at `../mock-server/` (sibling of this repo, intentionally not committed here per the spec). Reading it is encouraged — the chaos behavior is intentional, and the spec hints we should discover the AI endpoint's behavior by reading the source.
 
 Key files to consult when relevant:
-- `../mock-server/chaos.js` — defines latency, error rates, timeout %, PII injection %, rate limits. Read this before tuning timeouts, retry logic, or PII filtering.
-- `../mock-server/ai-simulator.js` — the AI endpoint behavior (consent flow, low-confidence responses, PII contamination). Read this before implementing the AI fetcher or insights panel.
+- `../mock-server/chaos.js` — Express middleware applied to the GraphQL routes: random latency (50–800ms), 5xx error injection (~5%), and a per-IP rate limit (60/min). Read this before interpreting random GraphQL 5xx responses or tuning GraphQL retry/backoff.
+- `../mock-server/ai-simulator.js` — the AI endpoint behavior: consent token issuance and 1-hour expiry, AI-specific rate limit (10/min, separate from chaos.js), timeout simulation (~5%, hangs 10–20s then 504), low-confidence responses (~10%), and PII contamination (~15%). Read this before implementing the AI fetcher, timeout/retry logic, PII filtering, or the consent flow.
 - `../mock-server/resolvers.js` — GraphQL resolvers, filter/pagination shape. Read this before writing GraphQL queries or pagination logic.
 - `../mock-server/server.js` — top-level routing, middleware, rate-limit setup.
 
