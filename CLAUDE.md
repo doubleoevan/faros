@@ -2,7 +2,12 @@
 
 Project instructions for Claude Code. Read this in full at the start of every session.
 
-**Spec & ongoing notes (Notion):** https://app.notion.com/p/35162400378d81d48dd1d3782566d843
+**Notion sources** — read the relevant ones at the start of every session.
+
+- **Take-home** — https://app.notion.com/p/35162400378d81d48dd1d3782566d843 — full project spec, scope, plan.
+- **Sprint / Tasks** — https://app.notion.com/p/35162400378d817089bec68c12058c35 — numbered tasks. One task = one commit. Pick up the next 🔴 task in sequence. Update status to 🟢 **only after** verifying the listed deliverable actually exists.
+- **Decision Log** — https://app.notion.com/p/35162400378d813e9a28e5a3bcf9a450 — DEC-### entries defending each tech choice. Reference DEC-IDs in commits when relevant. Append new entries; never edit accepted ones.
+- **API Reference** — https://app.notion.com/p/35162400378d810d97e9d09c3d580995 — GraphQL SDL, filter shapes, pagination, AI endpoint behavior, observed quirks. Read it before writing any GraphQL operation, AI fetcher, or telemetry call. Update it when new quirks surface.
 
 ---
 
@@ -15,6 +20,16 @@ The mock server is **not** part of this repo. It runs separately at `http://loca
 This app is the consumer of AI output, **not** a producer of it. We do not craft prompts or pick models. There is no prompts table, no models table.
 
 Treat this as a full project, not a throwaway. Documentation, tests, CI, and conventions match what we'd want in a real codebase.
+
+---
+
+## Workflow
+
+- **One task = one commit, pushed directly to `main`.** Trunk-based — no branches, no PRs. Conventional commits exactly as written in the Sprint / Tasks page (`feat:`, `chore:`, `docs:`, `test:`, `style:`). Run `pnpm typecheck && pnpm lint && pnpm test:run` before every push so `main` stays green.
+- **Sequential.** Don't skip ahead — Phase 0 unblocks Phase 1, etc.
+- **Don't mark a task 🟢 until the deliverable exists.** "Done" means the artifact named in the task (file, Notion section, schema entry) is actually present and the listed acceptance criteria are met. If unsure, leave it 🟡 and flag in the response.
+- **Pause at the end of each phase.** Don't roll forward into the next phase without an explicit go-ahead.
+- **Update Notion as you go.** New tech decision → append a DEC-### entry to Decision Log. New API quirk → update API Reference. New scope clarification → update Take-home. These pages feed `DECISIONS.md` at submission.
 
 ---
 
@@ -63,7 +78,7 @@ faros/
 │   │   ├── apollo/                   client, queries, fragments, generated.ts (committed)
 │   │   ├── ai/                       consent, fetcher, schemas, pii
 │   │   ├── telemetry/                client, events, session
-│   │   ├── flags/                    flags, provider, useFlag
+│   │   ├── feature-flags/            flags, provider, useFeatureFlag
 │   │   ├── hooks/                    useDebouncedValue, useEmployees, useEmployeeInsights, useConsent
 │   │   └── utils.ts                  cn helper
 │   ├── styles/
@@ -120,7 +135,11 @@ Key files to consult when relevant:
 - `../mock-server/resolvers.js` — GraphQL resolvers, filter/pagination shape. Read this before writing GraphQL queries or pagination logic.
 - `../mock-server/server.js` — top-level routing, middleware, rate-limit setup.
 
-When in doubt about API behavior, read the source rather than guess.
+When in doubt about API behavior:
+
+1. Check the **API Reference** Notion page first — it captures what we've already discovered.
+2. If it's not there, read the mock server source.
+3. Add what you find back to the API Reference so the next session doesn't have to rediscover it.
 
 ---
 
@@ -208,7 +227,7 @@ The `/api/ai/insights/:employeeId` endpoint behaves like a real LLM service. Fol
 4. **Validate response with Zod.** If validation fails, treat as failure, log telemetry, show fallback.
 5. **Filter PII.** ~15% of responses contain PII (emails, phone numbers). Run a regex pass; if matched, redact and surface a banner: "Some content was filtered for privacy."
 6. **Show confidence.** ~10% of responses are low-confidence. Display a clear visual cue and an explanation. Never present low-confidence output as authoritative.
-7. **Feature flag gate.** Wrap the entire AI panel in a feature flag check from `lib/flags`. If disabled, render a neutral placeholder, no network call.
+7. **Feature flag gate.** Wrap the entire AI panel in a feature flag check from `lib/feature-flags`. If disabled, render a neutral placeholder, no network call.
 8. **User feedback loop.** Thumbs up / down on every insight. Send to telemetry. This is the human-in-the-loop signal evaluators look for.
 9. **Fallback UX.** When AI fails or is disabled, the detail panel still works — show the raw activity data without AI commentary.
 
@@ -333,4 +352,4 @@ npm start
 - Match the Figma pixel-perfect for Part 1.
 - Optimize for **trustworthiness** in the AI panel, not flashiness.
 - Production thinking (telemetry, flags, runbook, tests) is worth more than extra features.
-- Update the Notion spec page as decisions get made.
+- New tech decision → append to **Decision Log**. New API quirk → update **API Reference**. New scope clarification → update **Take-home**. New task or status change → update **Sprint / Tasks**.
