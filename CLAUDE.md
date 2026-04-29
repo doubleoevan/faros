@@ -26,6 +26,7 @@ Treat this as a full project, not a throwaway. Documentation, tests, CI, and con
 ## Workflow
 
 - **One task = one commit, pushed directly to `main`.** Trunk-based — no branches, no PRs. Conventional commits exactly as written in the Sprint / Tasks page (`feat:`, `chore:`, `docs:`, `test:`, `style:`). Run `pnpm typecheck && pnpm lint && pnpm test:run` before every push so `main` stays green.
+- **Stop before committing.** After implementing a task and running the local checks, show the diff and the proposed commit message, then wait for explicit approval before running `git add`, `git commit`, or `git push`. Never commit without approval.
 - **Sequential.** Don't skip ahead — Phase 0 unblocks Phase 1, etc.
 - **Don't mark a task 🟢 until the deliverable exists.** "Done" means the artifact named in the task (file, Notion section, schema entry) is actually present and the listed acceptance criteria are met. If unsure, leave it 🟡 and flag in the response.
 - **Pause at the end of each phase.** Don't roll forward into the next phase without an explicit go-ahead.
