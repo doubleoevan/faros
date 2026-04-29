@@ -1,0 +1,18 @@
+# Build
+node_modules
+dist
+.env
+.env.local
+
+# OS
+.DS_Store
+*.log
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# Typescript build
+*.tsbuildinfo
