@@ -13,6 +13,7 @@ You will work with a **mock API server** that simulates real-world conditions: v
 ## Setup
 
 ### Prerequisites
+
 - Node.js 20+
 - npm or yarn
 - Your preferred frontend framework (React recommended, but not required)
@@ -28,17 +29,18 @@ npm start
 
 The server runs at `http://localhost:4000` with these endpoints:
 
-| Endpoint | Description |
-|----------|-------------|
-| `GET /graphql` | GraphQL endpoint (Apollo Sandbox available in browser) |
-| `POST /api/ai/consent` | Obtain a consent token for AI features |
+| Endpoint                           | Description                                             |
+| ---------------------------------- | ------------------------------------------------------- |
+| `GET /graphql`                     | GraphQL endpoint (Apollo Sandbox available in browser)  |
+| `POST /api/ai/consent`             | Obtain a consent token for AI features                  |
 | `GET /api/ai/insights/:employeeId` | AI-generated employee insights (requires consent token) |
-| `POST /api/telemetry` | Accepts structured telemetry events |
-| `GET /health` | Server health check |
+| `POST /api/telemetry`              | Accepts structured telemetry events                     |
+| `GET /health`                      | Server health check                                     |
 
 ### Assets
 
 Account type icons are provided in `assets/icons/`:
+
 - `github.png` — VCS (GitHub) accounts
 - `jira.png` — TMS (Jira) accounts
 - `pagerduty.png` — IMS (PagerDuty) accounts
@@ -56,6 +58,7 @@ Build the employee table view based on the [Figma reference](https://www.figma.c
 **Data comes from the GraphQL API** (not a static JSON file). The API uses cursor-based pagination.
 
 Required features:
+
 - Employee table with columns: Name (with avatar), Tracking Status, Teams, Accounts Connected
 - Search by employee name
 - Filter by team, tracking status, and account type
@@ -77,6 +80,7 @@ Add an AI-powered insights feature to the employee detail view.
 That's the full spec. The UX is yours to design. There is no Figma for this part.
 
 The AI insights endpoint is at `GET /api/ai/insights/:employeeId`. It behaves like a real AI service — discover its requirements, capabilities, and limitations as you integrate it. Pay attention to:
+
 - What the API requires before it will respond
 - How it behaves under different conditions
 - What it returns and whether you should display everything it gives you
@@ -106,6 +110,7 @@ Write a `DECISIONS.md` covering:
 ## Submission
 
 Submit a link to a **private GitHub repository** containing:
+
 - Your frontend application source code
 - `DECISIONS.md` in the repo root
 - `RUNBOOK.md` in the repo root

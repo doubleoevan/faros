@@ -114,6 +114,7 @@ faros/
 The mock server source lives at `../mock-server/` (sibling of this repo, intentionally not committed here per the spec). Reading it is encouraged — the chaos behavior is intentional, and the spec hints we should discover the AI endpoint's behavior by reading the source.
 
 Key files to consult when relevant:
+
 - `../mock-server/chaos.js` — Express middleware applied to the GraphQL routes: random latency (50–800ms), 5xx error injection (~5%), and a per-IP rate limit (60/min). Read this before interpreting random GraphQL 5xx responses or tuning GraphQL retry/backoff.
 - `../mock-server/ai-simulator.js` — the AI endpoint behavior: consent token issuance and 1-hour expiry, AI-specific rate limit (10/min, separate from chaos.js), timeout simulation (~5%, hangs 10–20s then 504), low-confidence responses (~10%), and PII contamination (~15%). Read this before implementing the AI fetcher, timeout/retry logic, PII filtering, or the consent flow.
 - `../mock-server/resolvers.js` — GraphQL resolvers, filter/pagination shape. Read this before writing GraphQL queries or pagination logic.
@@ -226,30 +227,30 @@ The `/api/ai/insights/:employeeId` endpoint behaves like a real LLM service. Fol
 
 ```typescript
 type TelemetryEvent = {
-  name: string                  // dot-namespaced: 'ai.insights.succeeded'
-  timestamp: string             // ISO 8601
-  sessionId: string             // generated once per session, in-memory
+  name: string // dot-namespaced: 'ai.insights.succeeded'
+  timestamp: string // ISO 8601
+  sessionId: string // generated once per session, in-memory
   properties?: Record<string, string | number | boolean | null>
 }
 ```
 
 **Events to emit, with reasoning:**
 
-| Event | Why |
-| --- | --- |
-| `app.session.started` | Denominator for every other rate calculation |
-| `employees.search.changed` | Are filters used? Sample with debounce so we don't flood |
-| `employees.filter.changed` | Same — which filters get used? |
-| `employees.detail.opened` | Engagement with the detail view |
-| `ai.flag.evaluated` | Confirms flag delivery; denominator for AI rates |
-| `ai.consent.requested` / `.granted` / `.denied` | Consent funnel; where do users drop off? |
-| `ai.insights.requested` | Demand for AI feature |
-| `ai.insights.succeeded` (with `latencyMs`, `confidence`) | Success rate, latency, confidence distribution |
-| `ai.insights.low_confidence` | Quality signal — how often is the model unsure? |
-| `ai.insights.pii_filtered` | Safety signal — how often does PII reach our filter? |
-| `ai.insights.timeout` / `.rate_limited` / `.failed` | Failure modes broken out, never lumped |
-| `ai.feedback.submitted` (with `rating`) | Human-in-the-loop quality signal |
-| `error.boundary.triggered` (with `boundary`, `errorMessage`) | Where the app crashes |
+| Event                                                        | Why                                                      |
+| ------------------------------------------------------------ | -------------------------------------------------------- |
+| `app.session.started`                                        | Denominator for every other rate calculation             |
+| `employees.search.changed`                                   | Are filters used? Sample with debounce so we don't flood |
+| `employees.filter.changed`                                   | Same — which filters get used?                           |
+| `employees.detail.opened`                                    | Engagement with the detail view                          |
+| `ai.flag.evaluated`                                          | Confirms flag delivery; denominator for AI rates         |
+| `ai.consent.requested` / `.granted` / `.denied`              | Consent funnel; where do users drop off?                 |
+| `ai.insights.requested`                                      | Demand for AI feature                                    |
+| `ai.insights.succeeded` (with `latencyMs`, `confidence`)     | Success rate, latency, confidence distribution           |
+| `ai.insights.low_confidence`                                 | Quality signal — how often is the model unsure?          |
+| `ai.insights.pii_filtered`                                   | Safety signal — how often does PII reach our filter?     |
+| `ai.insights.timeout` / `.rate_limited` / `.failed`          | Failure modes broken out, never lumped                   |
+| `ai.feedback.submitted` (with `rating`)                      | Human-in-the-loop quality signal                         |
+| `error.boundary.triggered` (with `boundary`, `errorMessage`) | Where the app crashes                                    |
 
 **Privacy rule:** never send PII in telemetry. Employee IDs are fine. Names, emails, phone numbers, and AI-generated text are not. The PII regex used for AI response filtering also runs on event property values as a safety net before send.
 
@@ -271,7 +272,7 @@ type TelemetryEvent = {
 
 ## Testing strategy
 
-The Faros spec says: *"Write tests where they add value. We'd rather see thoughtful tests for AI content validation than 100% coverage of trivial components."*
+The Faros spec says: _"Write tests where they add value. We'd rather see thoughtful tests for AI content validation than 100% coverage of trivial components."_
 
 **What gets tested (Vitest + Testing Library + MSW):**
 
