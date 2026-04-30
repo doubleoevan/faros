@@ -7,35 +7,45 @@ import { Dialog as DialogPrimitive } from "radix-ui"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
-/** Modal dialog root over Radix Dialog. From shadcn/ui. */
+/**
+ * Modal dialog root over Radix Dialog. From shadcn/ui.
+ */
 export function Dialog({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
 }
 
-/** Element that opens the Dialog. From shadcn/ui. */
+/**
+ * Element that opens the Dialog. From shadcn/ui.
+ */
 export function DialogTrigger({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
 }
 
-/** Renders Dialog content into a portal. From shadcn/ui. */
+/**
+ * Renders Dialog content into a portal. From shadcn/ui.
+ */
 export function DialogPortal({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
 }
 
-/** Element that closes the Dialog. From shadcn/ui. */
+/**
+ * Element that closes the Dialog. From shadcn/ui.
+ */
 export function DialogClose({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Close>) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
 }
 
-/** Backdrop overlay shown behind Dialog content. From shadcn/ui. */
+/**
+ * Backdrop overlay shown behind Dialog content. From shadcn/ui.
+ */
 export function DialogOverlay({
   className,
   ...props
@@ -52,7 +62,9 @@ export function DialogOverlay({
   )
 }
 
-/** Centered Dialog content panel with optional close button. From shadcn/ui. */
+/**
+ * Centered Dialog content panel with optional close button. From shadcn/ui.
+ */
 export function DialogContent({
   className,
   children,
@@ -87,7 +99,9 @@ export function DialogContent({
   )
 }
 
-/** Dialog header layout (title + description). From shadcn/ui. */
+/**
+ * Dialog header layout (title + description). From shadcn/ui.
+ */
 export function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -98,7 +112,9 @@ export function DialogHeader({ className, ...props }: React.ComponentProps<"div"
   )
 }
 
-/** Dialog footer layout with optional auto-close button. From shadcn/ui. */
+/**
+ * Dialog footer layout with optional auto-close button. From shadcn/ui.
+ */
 export function DialogFooter({
   className,
   showCloseButton = false,
@@ -126,7 +142,9 @@ export function DialogFooter({
   )
 }
 
-/** Dialog title (a11y heading). From shadcn/ui. */
+/**
+ * Dialog title (a11y heading). From shadcn/ui.
+ */
 export function DialogTitle({
   className,
   ...props
@@ -140,7 +158,9 @@ export function DialogTitle({
   )
 }
 
-/** Dialog description text. From shadcn/ui. */
+/**
+ * Dialog description text. From shadcn/ui.
+ */
 export function DialogDescription({
   className,
   ...props

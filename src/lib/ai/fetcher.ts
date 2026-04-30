@@ -14,7 +14,9 @@ export type InsightsErrorType =
   | 'network'
   | 'validation'
 
-/** Structured error thrown by fetchInsights; inspect `.type` for telemetry routing. */
+/**
+ * Structured error thrown by fetchInsights; inspect `.type` for telemetry routing.
+ */
 export class InsightsFetchError extends Error {
   readonly type: InsightsErrorType
   readonly retryAfterSeconds?: number
@@ -90,26 +92,31 @@ async function parseResponse(response: Response): Promise<AiInsightsResponse> {
   return result.data
 }
 
-/** Fetches AI-generated insights for an employee; retries once on 5xx, aborts after 10s. */
+// each attempt gets its own controller and timer so the retry has a full 10s budget
+async function attemptFetch(employeeId: string, consentToken: string): Promise<Response> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS)
+  try {
+    return await tryFetch(employeeId, consentToken, controller)
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+/**
+ * Fetches AI-generated insights for an employee; retries once on 5xx, aborts after 10s per attempt.
+ */
 export async function fetchInsights(
   employeeId: string,
   consentToken: string,
 ): Promise<AiInsightsResponse> {
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS)
+  const firstResponse = await attemptFetch(employeeId, consentToken)
 
-  try {
-    const firstResponse = await tryFetch(employeeId, consentToken, controller)
-
-    // retry once on 5xx — chaos.js does not apply to AI routes, but defensive against real infra errors
-    if (firstResponse.status >= 500) {
-      await sleep(RETRY_DELAY_MS)
-      const retryResponse = await tryFetch(employeeId, consentToken, controller)
-      return parseResponse(retryResponse)
-    }
-
-    return parseResponse(firstResponse)
-  } finally {
-    clearTimeout(timeoutId)
+  // retry once on 5xx. defensive against real infra errors (chaos.js does not apply to AI routes)
+  if (firstResponse.status >= 500) {
+    await sleep(RETRY_DELAY_MS)
+    return parseResponse(await attemptFetch(employeeId, consentToken))
   }
+
+  return parseResponse(firstResponse)
 }

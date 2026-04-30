@@ -22,11 +22,7 @@ type Employee = NonNullable<EmployeeQuery['employee']>
 
 export function EmployeeDetailPanel() {
   const [viewId, setViewId] = useQueryState('view', parseAsString)
-
-  // cache-first: returns immediately from the normalized cache when the employee was already
-  // fetched by the list query (normal click flow). falls back to a network request on hard
-  // refresh when the cache is empty — the Query.employee field policy in apollo/client.ts
-  // ensures the cache lookup finds the normalized entity without an extra round-trip.
+  // cache-first hits the cache from the list query, falls back to network on hard refresh.
   const { data, loading } = useQuery(EmployeeDocument, {
     variables: { id: viewId ?? '' },
     skip: !viewId,
@@ -45,7 +41,7 @@ export function EmployeeDetailPanel() {
   }, [employee, loading, setViewId, viewId])
 
   return (
-    // width transition pushes the table content left as the panel opens — matches Figma layout.
+    // width transition pushes the table content left as the panel opens
     <aside
       aria-label="Employee details"
       className={cn(

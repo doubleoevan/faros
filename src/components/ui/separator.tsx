@@ -5,7 +5,9 @@ import { Separator as SeparatorPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
-/** Horizontal or vertical divider over Radix Separator. From shadcn/ui. */
+/**
+ * Horizontal or vertical divider over Radix Separator. From shadcn/ui.
+ */
 export function Separator({
   className,
   orientation = "horizontal",

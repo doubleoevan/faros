@@ -11,7 +11,9 @@ export type UseAiConsentResult = {
   handleResetConsent: () => void
 }
 
-/** Manages the AI consent state machine: prompt visibility, token retrieval, and telemetry. */
+/**
+ * Manages the AI consent state machine: prompt visibility, token retrieval, and telemetry.
+ */
 export function useAiConsent(): UseAiConsentResult {
   const [consentStatus, setConsentStatus] = useState<AiConsentStatus>(() =>
     hasValidAiConsentToken() ? 'granted' : 'idle',

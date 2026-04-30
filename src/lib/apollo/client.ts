@@ -6,17 +6,20 @@ export const apolloClient = new ApolloClient({
   link: new HttpLink({ uri: apiUrl }),
   cache: new InMemoryCache({
     typePolicies: {
-      // employees can be looked up by id from list rows or detail query — same cache entry.
+      // employees can be looked up by id from list rows or detail query with the same cache entry.
       Employee: { keyFields: ['id'] },
       Team: { keyFields: ['id'] },
       // Account.uid echoes the employee's uid; normalizing collapses accounts. keep inline.
       Account: { keyFields: false },
       Query: {
         fields: {
-          // redirect employee(id) to the normalized entity already written by the list query,
-          // so cache-first returns immediately without a network round-trip.
+          // resolve employee(id) to the cached Employee entity to avoid a network round-trip.
           employee(_, { args, toReference }) {
-            return toReference({ __typename: 'Employee', id: args?.['id'] as string })
+            const id = args?.['id']
+            if (typeof id !== 'string') {
+              return undefined
+            }
+            return toReference({ __typename: 'Employee', id })
           },
         },
       },

@@ -1,8 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { emit, flushNow } from './client'
 
-// in the test environment VITE_TELEMETRY_ENABLED=false, so emit logs to console instead of
-// calling sendBeacon. we spy on console.log to verify sanitization without needing to flush.
+// in tests VITE_TELEMETRY_ENABLED=false routes emit to console.log. spy on it to verify
 const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
 afterEach(() => {
@@ -94,16 +93,14 @@ describe('flush timer lifecycle', () => {
     // flushNow on an empty buffer should clear any running timer
     flushNow()
 
-    expect(clearIntervalSpy).not.toHaveBeenCalled() // timer was never started, nothing to clear
+    expect(clearIntervalSpy).not.toHaveBeenCalled() // the timer was never started, nothing to clear
 
     vi.useRealTimers()
   })
 
   it('does not fire redundant callbacks once the buffer has been drained', () => {
     vi.useFakeTimers()
-    // emit once so a flush timer is started (VITE_TELEMETRY_ENABLED=false path logs to console
-    // and returns early, so the buffer stays empty and no timer is started in this env)
-    // confirm the console path: emit logs immediately and the buffer/timer code is skipped
+    // emit once to seed the buffer because in tests VITE_TELEMETRY_ENABLED=false logs to console and skips the timer.
     emit({
       name: 'some.event',
       timestamp: '2026-04-30T00:00:00.000Z',
@@ -112,7 +109,7 @@ describe('flush timer lifecycle', () => {
     })
     const callCount = consoleSpy.mock.calls.length
 
-    // advancing past flush interval should not produce additional console calls
+    // advancing past the flush interval should not produce additional console calls
     vi.advanceTimersByTime(10_000)
     expect(consoleSpy.mock.calls.length).toBe(callCount)
 

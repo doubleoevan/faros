@@ -6,7 +6,9 @@ import { Checkbox as CheckboxPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
-/** Accessible checkbox over Radix Checkbox with check-icon indicator. From shadcn/ui. */
+/**
+ * Accessible checkbox over Radix Checkbox with check-icon indicator. From shadcn/ui.
+ */
 export function Checkbox({
   className,
   ...props

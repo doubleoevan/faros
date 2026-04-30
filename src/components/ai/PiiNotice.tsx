@@ -5,7 +5,9 @@ type PiiNoticeProps = {
   className?: string
 }
 
-/** Informational banner shown when PII was detected and redacted from the AI summary. */
+/**
+ * Informational banner shown when Personally Identifiable Information was detected and redacted from the AI summary.
+ */
 export function PiiNotice({ className }: PiiNoticeProps) {
   return (
     <div

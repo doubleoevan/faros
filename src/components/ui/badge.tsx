@@ -4,7 +4,9 @@ import { Slot } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
-/** Tailwind class lookup for Badge variants. From shadcn/ui. */
+/**
+ * Tailwind class lookup for Badge variants. From shadcn/ui.
+ */
 export const badgeVariants = cva(
   "inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3",
   {
@@ -27,7 +29,9 @@ export const badgeVariants = cva(
   }
 )
 
-/** Inline label pill with a variant axis. From shadcn/ui. */
+/**
+ * Inline label pill with a variant axis. From shadcn/ui.
+ */
 export function Badge({
   className,
   variant = "default",

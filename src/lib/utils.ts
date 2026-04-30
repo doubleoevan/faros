@@ -1,12 +1,16 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
-/** Merges Tailwind class strings, deduping conflicting utilities. */
+/**
+ * Merges Tailwind class strings, deduping conflicting utilities.
+ */
 export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs))
 }
 
-/** Returns first+last initials from a name; "?" when empty. Single names produce one letter. */
+/**
+ * Returns first+last initials from a name; "?" when empty. Single names produce one letter.
+ */
 export function toInitials(name: string | null | undefined): string {
   if (!name) {
     return '?'
@@ -23,7 +27,9 @@ export function toInitials(name: string | null | undefined): string {
   return (firstInitial + lastInitial).toUpperCase() || '?'
 }
 
-/** localeCompare for nullable strings; nulls and undefineds always sort to the end. */
+/**
+ * localeCompare for nullable strings; null and undefined always sort to the end.
+ */
 export function compareNullableStrings(
   first: string | null | undefined,
   second: string | null | undefined,

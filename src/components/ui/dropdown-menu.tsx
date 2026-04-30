@@ -4,14 +4,18 @@ import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
-/** Dropdown menu root over Radix DropdownMenu. From shadcn/ui. */
+/**
+ * Dropdown menu root over Radix DropdownMenu. From shadcn/ui.
+ */
 export function DropdownMenu({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Root>) {
   return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />
 }
 
-/** Renders DropdownMenu content into a portal. From shadcn/ui. */
+/**
+ * Renders DropdownMenu content into a portal. From shadcn/ui.
+ */
 export function DropdownMenuPortal({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Portal>) {
@@ -20,7 +24,9 @@ export function DropdownMenuPortal({
   )
 }
 
-/** Element that opens the DropdownMenu. From shadcn/ui. */
+/**
+ * Element that opens the DropdownMenu. From shadcn/ui.
+ */
 export function DropdownMenuTrigger({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>) {
@@ -32,7 +38,9 @@ export function DropdownMenuTrigger({
   )
 }
 
-/** Animated DropdownMenu content panel. From shadcn/ui. */
+/**
+ * Animated DropdownMenu content panel. From shadcn/ui.
+ */
 export function DropdownMenuContent({
   className,
   sideOffset = 4,
@@ -53,7 +61,9 @@ export function DropdownMenuContent({
   )
 }
 
-/** Groups related menu items. From shadcn/ui. */
+/**
+ * Groups related menu items. From shadcn/ui.
+ */
 export function DropdownMenuGroup({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Group>) {
@@ -62,7 +72,9 @@ export function DropdownMenuGroup({
   )
 }
 
-/** Selectable menu item with optional inset and destructive variant. From shadcn/ui. */
+/**
+ * Selectable menu item with optional inset and destructive variant. From shadcn/ui.
+ */
 export function DropdownMenuItem({
   className,
   inset,
@@ -86,7 +98,9 @@ export function DropdownMenuItem({
   )
 }
 
-/** Toggleable menu item rendered with a check indicator. From shadcn/ui. */
+/**
+ * Toggleable menu item rendered with a check indicator. From shadcn/ui.
+ */
 export function DropdownMenuCheckboxItem({
   className,
   children,
@@ -113,7 +127,9 @@ export function DropdownMenuCheckboxItem({
   )
 }
 
-/** Container for mutually-exclusive radio items. From shadcn/ui. */
+/**
+ * Container for mutually-exclusive radio items. From shadcn/ui.
+ */
 export function DropdownMenuRadioGroup({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.RadioGroup>) {
@@ -125,7 +141,9 @@ export function DropdownMenuRadioGroup({
   )
 }
 
-/** Single-select menu item with a circle indicator. From shadcn/ui. */
+/**
+ * Single-select menu item with a circle indicator. From shadcn/ui.
+ */
 export function DropdownMenuRadioItem({
   className,
   children,
@@ -150,7 +168,9 @@ export function DropdownMenuRadioItem({
   )
 }
 
-/** Non-interactive label for a menu group. From shadcn/ui. */
+/**
+ * Non-interactive label for a menu group. From shadcn/ui.
+ */
 export function DropdownMenuLabel({
   className,
   inset,
@@ -171,7 +191,9 @@ export function DropdownMenuLabel({
   )
 }
 
-/** Visual divider between menu groups. From shadcn/ui. */
+/**
+ * Visual divider between menu groups. From shadcn/ui.
+ */
 export function DropdownMenuSeparator({
   className,
   ...props
@@ -185,7 +207,9 @@ export function DropdownMenuSeparator({
   )
 }
 
-/** Right-aligned shortcut hint (e.g. ⌘K) for a menu item. From shadcn/ui. */
+/**
+ * Right-aligned shortcut hint (e.g. ⌘K) for a menu item. From shadcn/ui.
+ */
 export function DropdownMenuShortcut({
   className,
   ...props
@@ -202,14 +226,18 @@ export function DropdownMenuShortcut({
   )
 }
 
-/** Submenu root. From shadcn/ui. */
+/**
+ * Submenu root. From shadcn/ui.
+ */
 export function DropdownMenuSub({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Sub>) {
   return <DropdownMenuPrimitive.Sub data-slot="dropdown-menu-sub" {...props} />
 }
 
-/** Item that opens a submenu, with a chevron affordance. From shadcn/ui. */
+/**
+ * Item that opens a submenu, with a chevron affordance. From shadcn/ui.
+ */
 export function DropdownMenuSubTrigger({
   className,
   inset,
@@ -234,7 +262,9 @@ export function DropdownMenuSubTrigger({
   )
 }
 
-/** Submenu content panel. From shadcn/ui. */
+/**
+ * Submenu content panel. From shadcn/ui.
+ */
 export function DropdownMenuSubContent({
   className,
   ...props

@@ -32,14 +32,14 @@ export function EmployeeFilters({ className }: { className?: string }) {
     setFilters: (value: string[]) => Promise<URLSearchParams>,
     filters: string[],
     filterValue: string,
-    isFiltered: boolean,
+    shouldInclude: boolean,
     field: string,
   ) => {
-    const updatedFilters = isFiltered
+    const updatedFilters = shouldInclude
       ? [...filters, filterValue]
       : filters.filter((entry) => entry !== filterValue)
     await setFilters(updatedFilters)
-    // any filter change reshapes the result set; the existing cursor trail no longer applies.
+    // any filter change reshapes the result set so the existing cursor trail no longer applies.
     await setCursors([])
     emit(events.employeesFilterChanged(field, filterValue))
   }
@@ -102,9 +102,9 @@ type AddFilterDropdownProps = {
   selectedTeams: ReadonlyArray<string>
   selectedStatuses: ReadonlyArray<string>
   selectedAccountTypes: ReadonlyArray<string>
-  onTeamFilterChange: (uid: string, isFiltered: boolean) => void | Promise<void>
-  onStatusFilterChange: (status: string, isFiltered: boolean) => void | Promise<void>
-  onAccountFilterChange: (type: string, isFiltered: boolean) => void | Promise<void>
+  onTeamFilterChange: (uid: string, shouldInclude: boolean) => void | Promise<void>
+  onStatusFilterChange: (status: string, shouldInclude: boolean) => void | Promise<void>
+  onAccountFilterChange: (type: string, shouldInclude: boolean) => void | Promise<void>
 }
 
 function AddFilterDropdown({

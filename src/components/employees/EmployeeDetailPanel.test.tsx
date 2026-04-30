@@ -22,8 +22,7 @@ import { emit } from '@/lib/telemetry'
 
 function renderWithFlag(isAiEnabled: boolean) {
   return render(
-    // FeatureFlagsContext.Provider is nested inside render()'s Providers wrapper;
-    // React reads the nearest provider, so this value wins over the default.
+    // the nearest Provider wins. this overrides the one inside render().
     <FeatureFlagsContext.Provider value={{ 'ai-insights': isAiEnabled }}>
       <EmployeeDetailPanel />
     </FeatureFlagsContext.Provider>,
@@ -33,7 +32,7 @@ function renderWithFlag(isAiEnabled: boolean) {
 describe('EmployeeDetailPanel — AI feature flag', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    // open the detail panel for emp_1 (Lando Calrissian) via URL — default MSW handlers serve it.
+    // open the detail panel for emp_1 (Lando Calrissian) via URL so that default MSW handlers serve it.
     window.history.replaceState(null, '', '/?view=emp_1')
     window.dispatchEvent(new PopStateEvent('popstate'))
   })

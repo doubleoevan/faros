@@ -11,19 +11,25 @@ import { employeeFixtures, makeEmployeesResponse, makeInsightsResponse } from '.
 const AI_BASE = 'http://localhost:4000'
 export const AI_INSIGHTS_URL = `${AI_BASE}/api/ai/insights/:employeeId`
 
-/** Returns a 200 response with normal confidence and no PII. */
+/**
+ * Returns a 200 response with normal confidence and no PII.
+ */
 export function aiInsightsSuccessHandler() {
   return http.get(AI_INSIGHTS_URL, () => HttpResponse.json(makeInsightsResponse()))
 }
 
-/** Returns a 200 response with confidence below the low-confidence threshold (0.2). */
+/**
+ * Returns a 200 response with confidence below the low-confidence threshold (0.2).
+ */
 export function aiInsightsLowConfidenceHandler() {
   return http.get(AI_INSIGHTS_URL, () =>
     HttpResponse.json(makeInsightsResponse({ confidence: 0.2 })),
   )
 }
 
-/** Returns a 200 response whose summary contains a phone number that the PII filter must redact. */
+/**
+ * Returns a 200 response whose summary contains a phone number that the PII filter must redact.
+ */
 export function aiInsightsPiiHandler() {
   return http.get(AI_INSIGHTS_URL, () =>
     HttpResponse.json(
@@ -32,7 +38,9 @@ export function aiInsightsPiiHandler() {
   )
 }
 
-/** Hangs indefinitely, triggering the AbortController timeout in fetchInsights. */
+/**
+ * Hangs indefinitely, triggering the AbortController timeout in fetchInsights.
+ */
 export function aiInsightsTimeoutHandler() {
   return http.get(AI_INSIGHTS_URL, async () => {
     await delay('infinite')
@@ -40,7 +48,9 @@ export function aiInsightsTimeoutHandler() {
   })
 }
 
-/** Returns a 429 with a retryAfter body so the rate-limit countdown is shown. */
+/**
+ * Returns a 429 with a retryAfter body so the rate-limit countdown is shown.
+ */
 export function aiInsightsRateLimitHandler(retryAfter = 32) {
   return http.get(AI_INSIGHTS_URL, () =>
     HttpResponse.json(
@@ -50,7 +60,9 @@ export function aiInsightsRateLimitHandler(retryAfter = 32) {
   )
 }
 
-/** Always returns 500 so both the first attempt and the single retry fail. */
+/**
+ * Always returns 500 so both the first attempt and the single retry fail.
+ */
 export function aiInsightsServerErrorHandler() {
   return http.get(AI_INSIGHTS_URL, () =>
     HttpResponse.json({ error: 'Internal server error' }, { status: 500 }),
@@ -66,7 +78,7 @@ type EmployeesVariables = {
 
 type EmployeeRow = EmployeesQuery['employees']['edges'][number]['node']
 
-// single-employee handler — used when the detail panel fetches on hard refresh (cache empty).
+// single-employee handler used when the detail panel fetches on hard refresh with an empty cache.
 export function employeeDetailHandler(employeeRows: EmployeeRow[]) {
   return graphql.query<EmployeeQuery, EmployeeQueryVariables>('Employee', ({ variables }) => {
     const employee = employeeRows.find((e) => e.id === variables.id) ?? null
@@ -83,8 +95,7 @@ export const handlers = [
   employeeDetailHandler(employeeFixtures),
 ]
 
-// search-aware handler that filters fixtures by case-insensitive name match and the
-// EmployeeFilter input (teams, trackingStatuses, accountTypes — OR within each group).
+// search-aware handler that filters fixtures by case-insensitive name match and the EmployeeFilter input
 export function employeesSearchHandler(employeeRows: EmployeeRow[]) {
   return graphql.query<EmployeesQuery, EmployeesVariables>('Employees', ({ variables }) => {
     const term = variables.search?.toLowerCase().trim() ?? ''
@@ -117,7 +128,7 @@ export function employeesSearchHandler(employeeRows: EmployeeRow[]) {
   })
 }
 
-// filter dropdown values — derived from the fixture set, mirroring the resolver.
+// derive filter dropdown values from the fixture set, mirroring the resolver.
 export function filterOptionsHandler(employeeRows: EmployeeRow[]) {
   return graphql.query<FilterOptionsQuery>('FilterOptions', () => {
     const teamMap = new Map<string, { uid: string; name: string }>()

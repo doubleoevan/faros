@@ -6,7 +6,9 @@ type LowConfidenceBadgeProps = {
   className?: string
 }
 
-/** Amber warning badge shown when AI confidence is at or below the low-confidence threshold. */
+/**
+ * Warning badge shown when AI confidence is at or below the low-confidence threshold.
+ */
 export function LowConfidenceBadge({ confidence, className }: LowConfidenceBadgeProps) {
   const percentage = Math.round(confidence * 100)
   return (

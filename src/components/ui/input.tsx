@@ -2,7 +2,9 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-/** Styled native input with focus and invalid states. From shadcn/ui. */
+/**
+ * Styled native input with focus and invalid states. From shadcn/ui.
+ */
 export function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
     <input

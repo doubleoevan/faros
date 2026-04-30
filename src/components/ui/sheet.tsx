@@ -4,26 +4,34 @@ import { Dialog as SheetPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
-/** Side-panel sheet root over Radix Dialog. From shadcn/ui. */
+/**
+ * Side-panel sheet root over Radix Dialog. From shadcn/ui.
+ */
 export function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
 }
 
-/** Element that opens the Sheet. From shadcn/ui. */
+/**
+ * Element that opens the Sheet. From shadcn/ui.
+ */
 export function SheetTrigger({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Trigger>) {
   return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />
 }
 
-/** Element that closes the Sheet. From shadcn/ui. */
+/**
+ * Element that closes the Sheet. From shadcn/ui.
+ */
 export function SheetClose({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Close>) {
   return <SheetPrimitive.Close data-slot="sheet-close" {...props} />
 }
 
-/** Renders Sheet content into a portal. From shadcn/ui. */
+/**
+ * Renders Sheet content into a portal. From shadcn/ui.
+ */
 export function SheetPortal({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Portal>) {
@@ -48,7 +56,9 @@ export const SheetOverlay = React.forwardRef<
 ))
 SheetOverlay.displayName = "SheetOverlay"
 
-/** Animated Sheet content panel that slides in from the chosen side. From shadcn/ui. */
+/**
+ * Animated Sheet content panel that slides in from the chosen side. From shadcn/ui.
+ */
 export function SheetContent({
   className,
   children,
@@ -93,7 +103,9 @@ export function SheetContent({
   )
 }
 
-/** Title and description container at the top of a Sheet. From shadcn/ui. */
+/**
+ * Title and description container at the top of a Sheet. From shadcn/ui.
+ */
 export function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -104,7 +116,9 @@ export function SheetHeader({ className, ...props }: React.ComponentProps<"div">
   )
 }
 
-/** Action region pinned to the bottom of a Sheet. From shadcn/ui. */
+/**
+ * Action region pinned to the bottom of a Sheet. From shadcn/ui.
+ */
 export function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -115,7 +129,9 @@ export function SheetFooter({ className, ...props }: React.ComponentProps<"div">
   )
 }
 
-/** Sheet title text. From shadcn/ui. */
+/**
+ * Sheet title text. From shadcn/ui.
+ */
 export function SheetTitle({
   className,
   ...props
@@ -129,7 +145,9 @@ export function SheetTitle({
   )
 }
 
-/** Sheet description text. From shadcn/ui. */
+/**
+ * Sheet description text. From shadcn/ui.
+ */
 export function SheetDescription({
   className,
   ...props

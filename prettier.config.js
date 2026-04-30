@@ -1,4 +1,6 @@
-/** @type {import("prettier").Config} */
+/**
+ * @type {import("prettier").Config}
+ */
 export default {
   semi: false,
   singleQuote: true,

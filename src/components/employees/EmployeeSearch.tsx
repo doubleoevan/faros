@@ -46,7 +46,7 @@ export function EmployeeSearch({ className }: { className?: string }) {
         value={search ?? ''}
         onChange={handleSearchChange}
         aria-label="Search employees by name"
-        // hide the WebKit native cancel button — we render our own for cross-browser parity.
+        // hide the WebKit native cancel button to render our own for cross-browser parity.
         className="pr-9 pl-9 [&::-webkit-search-cancel-button]:hidden"
       />
       {search && (

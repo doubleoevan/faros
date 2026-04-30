@@ -1,7 +1,7 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
-// stable Account.type identifiers per the schema. uses provenance over Account.source which is a label.
+// look up by Account.type. use stable codes instead of display labels.
 const ACCOUNT_ICONS: Record<string, { src: string; label: string }> = {
   vcs: { src: '/icons/github.png', label: 'GitHub' },
   tms: { src: '/icons/jira.png', label: 'Jira' },
@@ -28,8 +28,7 @@ export function AccountIcons({ accounts, className }: AccountIconsProps) {
             <Tooltip>
               <TooltipTrigger asChild>
                 {icon ? (
-                  // span wrapper so Radix Slot has a real element to attach a ref to;
-                  // raw <img /> doesn't accept refs reliably.
+                  // use a span wrapper because Radix Slot needs a real element and <img /> can't take refs.
                   <span className="inline-flex">
                     <img src={icon.src} alt={label} className="size-5 rounded-sm object-contain" />
                   </span>

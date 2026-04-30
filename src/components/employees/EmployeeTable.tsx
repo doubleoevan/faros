@@ -27,8 +27,7 @@ const SEARCH_DEBOUNCE_MS = 300
 const SKELETON_ROW_COUNT = 5
 const COLUMN_COUNT = 5
 
-// per-team palette: known team uids get specific tones (matches Figma); others fall back to a
-// stable hash so the same team always gets the same color even when not in the known list.
+// map known team uids to specific tones based on the mockup.
 const KNOWN_TEAM_TONES: Record<string, string> = {
   frontend: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   backend: 'border-sky-200 bg-sky-50 text-sky-800',
@@ -40,6 +39,7 @@ const KNOWN_TEAM_TONES: Record<string, string> = {
   mobile: 'border-fuchsia-200 bg-fuchsia-50 text-fuchsia-800',
 }
 
+// map unknown team uids to fallback tones not in the mockup.
 const FALLBACK_TEAM_TONES = [
   'border-amber-100 bg-amber-50 text-amber-800',
   'border-sky-200 bg-sky-50 text-sky-800',
@@ -49,16 +49,14 @@ const FALLBACK_TEAM_TONES = [
   'border-cyan-200 bg-cyan-50 text-cyan-800',
 ] as const
 
-// mock-server cursor format: base64 of `cursor:<index-of-last-item-on-prior-page>`. used to
-// synthesize cursors for pages we haven't visited yet so the page-jump dropdown can make
-// arbitrary forward jumps. couples this code to the mock-server's format — if a real API
-// ships opaque or different cursors, switch to a sequential fetchMore walk.
+// build a cursor for an unvisited page so the page-jump dropdown can skip ahead.
+// assumes the mock-server's `base64("cursor:<index>")` format. swap to fetchMore for a real API.
 function synthesizeCursorForPage(page: number, pageSize: number): string {
   const lastIndexOfPriorPage = (page - 1) * pageSize - 1
   return btoa(`cursor:${lastIndexOfPriorPage}`)
 }
 
-function teamTone(uid: string): string {
+function toTeamTone(uid: string): string {
   const tone = KNOWN_TEAM_TONES[uid]
   if (tone) {
     return tone
@@ -73,7 +71,7 @@ function teamTone(uid: string): string {
 type EmployeeRow = EmployeesQuery['employees']['edges'][number]['node']
 
 export function EmployeeTable({ className }: { className?: string }) {
-  // URL holds the forward trail (?cursor=A,B,C) so refresh and manual edits restore Prev.
+  // URL holds the forward trail, so refresh and manual edits restore the previous page.
   const [cursors, setCursors] = useQueryState(
     'cursor',
     parseAsArrayOf(parseAsString).withDefault([]),
@@ -86,8 +84,7 @@ export function EmployeeTable({ className }: { className?: string }) {
   const [sort, setSort] = useQueryState('sort', parseAsString)
   const currentCursor = cursors.length > 0 ? (cursors[cursors.length - 1] ?? null) : null
 
-  // Apollo dedupes identical variable shapes, so passing `undefined` keeps cache slots stable
-  // when a filter is unset rather than thrashing them with empty arrays.
+  // pass `undefined` instead of empty arrays when filters are unset to keep Apollo's cache key stable.
   const filter =
     teams.length > 0 || statuses.length > 0 || accountTypes.length > 0
       ? {
@@ -104,7 +101,7 @@ export function EmployeeTable({ className }: { className?: string }) {
     filter,
   })
 
-  // schema has no orderBy arg — sort is client-side on the visible page only. see DEC.
+  // schema has no orderBy arg. sort is client-side on the visible page only.
   const employees = useMemo(
     () =>
       sortEmployees(
@@ -116,7 +113,7 @@ export function EmployeeTable({ className }: { className?: string }) {
 
   const totalCount = data?.employees.totalCount ?? 0
   const currentPageSize = employees.length
-  // assumes prior pages were full; resolver guarantees that outside the last page.
+  // assumes prior pages were full. resolver guarantees that outside the last page.
   const pageOffset = cursors.length * EMPLOYEES_PAGE_SIZE
   const pageStart = totalCount === 0 || currentPageSize === 0 ? 0 : pageOffset + 1
   const pageEnd = pageStart === 0 ? 0 : pageOffset + currentPageSize
@@ -144,14 +141,13 @@ export function EmployeeTable({ className }: { className?: string }) {
   }
 
   const handleSelectPage = async (page: number) => {
-    // back-jump to a visited page — slice the existing trail.
+    // back-jump to a visited page. slice the existing trail.
     if (page <= cursors.length + 1) {
       await setCursors(cursors.slice(0, page - 1))
       return
     }
-    // forward-jump beyond visited pages — synthesize the trail using the mock-server's
-    // cursor format. brittle if the real API ever uses opaque/different cursors; if that
-    // happens, swap to sequential fetchMore walks (slower, format-agnostic).
+
+    // forward-jump beyond visited pages. synthesize the cursor trail.
     const newCursors: string[] = []
     for (let nextPage = 2; nextPage <= page; nextPage += 1) {
       newCursors.push(synthesizeCursorForPage(nextPage, EMPLOYEES_PAGE_SIZE))
@@ -224,7 +220,7 @@ function EmployeeTableContents({
   hasError: boolean
 }) {
   if (isLoading) {
-    return <EmployeeTableSkeletonRows />
+    return <EmployeeTablePlaceholderRows />
   }
   if (hasError) {
     return (
@@ -354,7 +350,7 @@ function TeamPills({ teams }: { teams: ReadonlyArray<{ id: string; uid: string; 
           key={team.id}
           className={cn(
             'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium',
-            teamTone(team.uid),
+            toTeamTone(team.uid),
           )}
         >
           {team.uid}
@@ -364,7 +360,7 @@ function TeamPills({ teams }: { teams: ReadonlyArray<{ id: string; uid: string; 
   )
 }
 
-function EmployeeTableSkeletonRows() {
+function EmployeeTablePlaceholderRows() {
   return (
     <>
       {Array.from({ length: SKELETON_ROW_COUNT }).map((_, index) => (

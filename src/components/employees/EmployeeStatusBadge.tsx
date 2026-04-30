@@ -17,7 +17,7 @@ export function EmployeeStatusBadge({
   const isActive = category === 'Active'
   return (
     <span className={cn('inline-flex items-start gap-2 text-sm', className)}>
-      {/* filled circle behind a small user icon — lucide doesn't ship a "filled" CircleUser. */}
+      {/* filled circle behind a small user icon. lucide doesn't ship a "filled" CircleUser. */}
       <span
         aria-hidden="true"
         className={cn(

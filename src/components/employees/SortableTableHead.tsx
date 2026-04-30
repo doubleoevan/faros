@@ -12,7 +12,9 @@ export type SortableTableHeadProps = {
   children: ReactNode
 }
 
-/** TableHead with a sort affordance that cycles unsorted → asc → desc → unsorted. */
+/**
+ * TableHead with a clickable sort arrow that cycles unsorted → asc → desc → unsorted.
+ */
 export function SortableTableHead({
   field,
   currentSort,
@@ -21,13 +23,11 @@ export function SortableTableHead({
   children,
 }: SortableTableHeadProps) {
   const direction = sortDirectionForField(currentSort, field)
-  // unsorted shows a dimmed down-arrow per the Figma; asc flips it to up at full opacity.
+  // unsorted shows a dimmed down-arrow. asc flips it to up at full opacity.
   const Icon = direction === 'asc' ? ArrowUp : ArrowDown
   const ariaSort = direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : 'none'
 
   return (
-    // relative + absolute button so the entire cell area is the click target, not just the
-    // text+icon. button covers TableHead's padding too — clicking anywhere in the cell sorts.
     <TableHead className={cn('relative', className)} aria-sort={ariaSort}>
       <button
         type="button"

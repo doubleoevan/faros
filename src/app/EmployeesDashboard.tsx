@@ -20,15 +20,11 @@ export function EmployeesDashboard() {
               status, and manage their connected accounts.
             </p>
           </header>
-          {/* group search and filters tighter than the dashboard's default vertical rhythm. */}
           <div className="space-y-2">
             <EmployeeSearch />
             <EmployeeFilters />
           </div>
-          {/* per-region boundary: a table render-throw shouldn't take search/filters/detail with it.
-              resetStore wipes the cache and refetches every active query, so any stale entry that
-              caused the throw is gone and every visible region (filters too) shows fresh data after
-              recovery. URL state is preserved. */}
+          {/* per-region boundary; resetStore wipes cache so recovery shows fresh data. */}
           <ErrorBoundary
             FallbackComponent={EmployeeTableErrorFallback}
             onReset={() => {

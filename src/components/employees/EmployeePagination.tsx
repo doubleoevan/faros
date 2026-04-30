@@ -62,8 +62,7 @@ export function EmployeePagination({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-[8rem]">
-          {/* all pages selectable — back-jumps slice the trail, forward-jumps synthesize one
-              from the mock-server's cursor format (see EmployeeTable). */}
+          {/* dropdown to select the page group to jump to */}
           {Array.from({ length: totalPages }).map((_, index) => {
             const page = index + 1
             const start = (page - 1) * pageSize + 1

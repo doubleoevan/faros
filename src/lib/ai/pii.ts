@@ -1,4 +1,6 @@
-/** Result of running PII detection on a text string. */
+/**
+ * Result of running PII detection on a text string.
+ */
 export type PiiFilterResult = {
   text: string
   hasPii: boolean
@@ -13,16 +15,20 @@ const PII_PATTERNS: RegExp[] = [
   /\b\d+\s+[A-Z][a-z]+\s+(?:Street|Avenue|Lane|Drive|Court),\s+[A-Za-z]+,\s+[A-Z]{2}\s+\d{5}\b/g,
 ]
 
-/** Returns true if the text contains any detectable PII pattern. */
+/**
+ * Returns true if the text contains any detectable PII pattern.
+ */
 export function containsPii(text: string): boolean {
   return PII_PATTERNS.some((pattern) => {
-    // reset before test — global regexes are stateful
+    // reset before test. global regexes are stateful
     pattern.lastIndex = 0
     return pattern.test(text)
   })
 }
 
-/** Redacts all detectable PII in `text`; returns the sanitized string and a detection flag. */
+/**
+ * Redacts all detectable PII in `text`; returns the sanitized string and a detection flag.
+ */
 export function filterPii(text: string): PiiFilterResult {
   let hasPii = false
   let result = text

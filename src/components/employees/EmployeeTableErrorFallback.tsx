@@ -3,7 +3,9 @@ import type { FallbackProps } from 'react-error-boundary'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-/** Per-region fallback shown when a render error escapes the EmployeeTable subtree. */
+/**
+ * Per-region fallback shown when a render error escapes the EmployeeTable subtree.
+ */
 export function EmployeeTableErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
   const message = error instanceof Error ? error.message : String(error)
   return (

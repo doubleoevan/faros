@@ -9,7 +9,9 @@ type AiConsentPromptProps = {
   className?: string
 }
 
-/** Inline panel section that explains AI insights and requests user authorization. */
+/**
+ * Inline panel section that explains AI insights and requests user authorization.
+ */
 export function AiConsentPrompt({
   isLoading = false,
   onConsentGrant,
@@ -23,8 +25,8 @@ export function AiConsentPrompt({
         <h3 className="text-sm font-semibold">AI Activity Insights</h3>
       </div>
       <p className="text-muted-foreground text-sm">
-        Faros can generate a summary of this employee&apos;s recent activity using data already
-        connected to your workspace — commits, pull requests, code reviews, and calendar events.
+        {`Faros can generate a summary of this employee's recent activity using data already
+connected to your workspace — commits, pull requests, code reviews, and calendar events.`}
       </p>
       <ul className="text-muted-foreground space-y-1 text-sm">
         <li>- Git commits and pull requests</li>

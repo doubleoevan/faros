@@ -20,19 +20,18 @@ function flush(): void {
     return
   }
   const toSend = buffer.splice(0)
-  // keepalive ensures delivery even on page unload, replacing sendBeacon (see DEC-016)
-  // try/catch wraps JSON.stringify too — a synchronous throw escapes .catch()
+  // try/catch wraps JSON.stringify
   try {
     fetch(TELEMETRY_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(toSend),
-      keepalive: true,
+      keepalive: true, // keepalive ensures delivery on unload.
     }).catch(() => {
-      // fire-and-forget — telemetry failures must never break the app
+      // fire-and-forget. telemetry failures must never break the app
     })
   } catch {
-    // fire-and-forget — telemetry failures must never break the app
+    // fire-and-forget. telemetry failures must never break the app
   }
   if (flushTimer !== null) {
     clearInterval(flushTimer)
@@ -80,12 +79,16 @@ if (typeof window !== 'undefined') {
   window.addEventListener('pagehide', flush)
 }
 
-/** Drains the event buffer immediately; useful for flush-before-navigate and testing. */
+/**
+ * Drains the event buffer immediately; useful for flush-before-navigate and testing.
+ */
 export function flushNow(): void {
   flush()
 }
 
-/** Buffers a telemetry event and flushes on interval or batch threshold; no-op when disabled. */
+/**
+ * Buffers a telemetry event and flushes on an interval or batch threshold; no-op when disabled.
+ */
 export function emit(event: TelemetryEvent): void {
   const safeEvent = sanitizeEvent(event)
   if (!isEnabled) {

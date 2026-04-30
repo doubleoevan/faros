@@ -8,8 +8,7 @@ import { employeeFixtures, makeEmployeeRow } from '@/test/mocks/fixtures'
 import { EmployeeSearch } from '@/components/employees/EmployeeSearch'
 import { EmployeesDashboard } from './EmployeesDashboard'
 
-// helper component that writes ?q= via nuqs from outside EmployeeSearch — stand-in for
-// any external URL change (browser back, paste link, sibling component) in the test env.
+// stand-in for any external `?q=` write (browser back, paste, sibling component).
 function ExternalQuerySetter({ to }: { to: string }) {
   const [, setSearch] = useQueryState('q', parseAsString)
   return (
@@ -78,8 +77,7 @@ describe('EmployeesDashboard', () => {
   it('removing a filter via its chip clears the cursor trail', async () => {
     server.use(employeesSearchHandler(employeeFixtures), filterOptionsHandler(employeeFixtures))
     const user = userEvent.setup()
-    // start with both a stale cursor and an applied filter — the cursor-clear on filter change
-    // is what's under test. URL-preset avoids Radix submenu navigation in happy-dom.
+    // preset the filter via URL to avoid fragile Radix submenu navigation in happy-dom.
     window.history.replaceState(null, '', '/?cursor=stale_cursor&status=Ignored')
     window.dispatchEvent(new PopStateEvent('popstate'))
     render(<EmployeesDashboard />)
@@ -100,9 +98,7 @@ describe('EmployeesDashboard', () => {
   })
 
   it('combines status and account filters into the GraphQL request and renders only the intersection', async () => {
-    // bob passes the status filter (Included) but lacks a vcs account — proves both filters
-    // are AND-combined in the request, not just the status one. without him the test couldn't
-    // distinguish "both filters applied" from "only status applied."
+    // bob passes the status filter but lacks a vcs account. without him, we couldn't tell "both filters applied."
     const fixturesWithDisambiguator = [
       ...employeeFixtures,
       makeEmployeeRow({
@@ -119,16 +115,14 @@ describe('EmployeesDashboard', () => {
       employeesSearchHandler(fixturesWithDisambiguator),
       filterOptionsHandler(fixturesWithDisambiguator),
     )
-    // preset both filters via URL — avoids fragile multi-dropdown click sequences in happy-dom.
+    // preset both filters via URL to avoid fragile multi-dropdown click sequences in happy-dom.
     window.history.replaceState(null, '', '/?status=Included&account=vcs')
     window.dispatchEvent(new PopStateEvent('popstate'))
 
     render(<EmployeesDashboard />)
 
-    // lando passes both filters (Included + vcs).
+    // lando passes both filters; boba fails status; bob fails account.
     expect(await screen.findByText('Lando Calrissian')).toBeInTheDocument()
-    // boba fails status, bob passes status but fails account — both are excluded only when
-    // both filters are applied together.
     expect(screen.queryByText('Boba Fett')).not.toBeInTheDocument()
     expect(screen.queryByText('Bob Builder')).not.toBeInTheDocument()
     expect(window.location.search).toContain('status=Included')
@@ -163,7 +157,7 @@ describe('EmployeesDashboard', () => {
     const panel = await screen.findByRole('complementary', { name: /employee details/i })
     expect(panel).toHaveTextContent('Lando Calrissian')
     expect(screen.getByRole('region', { name: /ai insights/i })).toBeInTheDocument()
-    // nuqs throttles URL writes — wait for the flush before asserting.
+    // nuqs throttles URL writes. wait for the flush before asserting.
     await waitFor(() => {
       expect(window.location.search).toContain('view=emp_1')
     })
@@ -173,8 +167,7 @@ describe('EmployeesDashboard', () => {
   it('updates the search input when ?q= changes from outside the component', async () => {
     server.use(employeesSearchHandler(employeeFixtures))
     const user = userEvent.setup()
-    // render the search in isolation to avoid the full dashboard's detail panel
-    // reacting to any leftover ?view= URL state from a prior test.
+    // render the search in isolation to avoid the dashboard reacting to leftover ?view= state.
     render(
       <>
         <EmployeeSearch />

@@ -9,7 +9,7 @@ import {
 import type { AiInsightsResponse, InsightsErrorType } from '@/lib/ai'
 import { emit, events } from '@/lib/telemetry'
 
-// djb2-variant hash — identifies a specific AI response for feedback correlation
+// djb2-variant hash to identify a specific AI response for feedback correlation
 function computeResponseHash(text: string): string {
   let hash = 0
   for (const character of text) {
@@ -40,7 +40,9 @@ export type UseEmployeeInsightsResult = {
   handleInsightFeedback: (rating: 'up' | 'down') => void
 }
 
-/** Fetches, validates, and processes AI insights for an employee; handles PII and confidence. */
+/**
+ * Fetches, validates, and processes AI insights for an employee; handles PII and confidence.
+ */
 export function useEmployeeInsights(employeeId: string): UseEmployeeInsightsResult {
   const [insightsState, setInsightsState] = useState<InsightsState>({ status: 'loading' })
   const [retryKey, setRetryKey] = useState(0)

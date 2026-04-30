@@ -11,7 +11,7 @@ export default defineConfig({
     },
   },
   server: {
-    // mock server owns :4000 — keep the dev server on its own port
+    // mock server owns :4000 keep the dev server on its own port
     port: 5174,
     strictPort: true,
   },

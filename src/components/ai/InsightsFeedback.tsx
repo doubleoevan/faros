@@ -8,7 +8,9 @@ type InsightsFeedbackProps = {
   className?: string
 }
 
-/** Thumbs up / down feedback row for AI-generated insights. */
+/**
+ * Thumbs up / down feedback row for AI-generated insights.
+ */
 export function InsightsFeedback({ onFeedbackSubmit, className }: InsightsFeedbackProps) {
   const [submitted, setSubmitted] = useState<'up' | 'down' | null>(null)
 

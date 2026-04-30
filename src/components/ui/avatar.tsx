@@ -3,7 +3,9 @@ import { Avatar as AvatarPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
-/** Circular avatar root with sm/default/lg sizes. From shadcn/ui. */
+/**
+ * Circular avatar root with sm/default/lg sizes. From shadcn/ui.
+ */
 export function Avatar({
   className,
   size = "default",
@@ -24,7 +26,9 @@ export function Avatar({
   )
 }
 
-/** Avatar image; auto-hides on load failure. From shadcn/ui. */
+/**
+ * Avatar image; auto-hides on load failure. From shadcn/ui.
+ */
 export function AvatarImage({
   className,
   ...props
@@ -38,7 +42,9 @@ export function AvatarImage({
   )
 }
 
-/** Initials/placeholder shown when AvatarImage is unavailable. From shadcn/ui. */
+/**
+ * Initials/placeholder shown when AvatarImage is unavailable. From shadcn/ui.
+ */
 export function AvatarFallback({
   className,
   ...props
@@ -55,7 +61,9 @@ export function AvatarFallback({
   )
 }
 
-/** Status dot anchored to the avatar's bottom-right. From shadcn/ui. */
+/**
+ * Status dot anchored to the avatar's bottom-right. From shadcn/ui.
+ */
 export function AvatarBadge({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
@@ -72,7 +80,9 @@ export function AvatarBadge({ className, ...props }: React.ComponentProps<"span"
   )
 }
 
-/** Stacked-avatar layout container. From shadcn/ui. */
+/**
+ * Stacked-avatar layout container. From shadcn/ui.
+ */
 export function AvatarGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -86,7 +96,9 @@ export function AvatarGroup({ className, ...props }: React.ComponentProps<"div">
   )
 }
 
-/** Trailing "+N more" tile for AvatarGroup overflow. From shadcn/ui. */
+/**
+ * Trailing "+N more" tile for AvatarGroup overflow. From shadcn/ui.
+ */
 export function AvatarGroupCount({
   className,
   ...props

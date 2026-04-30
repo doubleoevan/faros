@@ -116,7 +116,7 @@ describe('EmployeeTable pagination', () => {
 
   it('restores both arrows on refresh by reading the trail from the URL', async () => {
     server.use(employeesPagedHandler(paginationFixtures, { pageSize: EMPLOYEES_PAGE_SIZE }))
-    // simulate a refreshed mid-pagination URL where the trail came along for the ride.
+    // simulate a refresh while mid-pagination by preserving the cursor in the URL.
     window.history.replaceState(
       null,
       '',

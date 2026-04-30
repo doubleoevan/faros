@@ -6,7 +6,9 @@ type InsightsPlaceholderProps = {
   className?: string
 }
 
-/** Loading skeleton displayed while AI insights are being fetched. */
+/**
+ * Loading placeholder displayed while AI insights are being fetched.
+ */
 export function InsightsPlaceholder({ className }: InsightsPlaceholderProps) {
   return (
     <section

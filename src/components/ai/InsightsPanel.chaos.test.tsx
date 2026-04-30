@@ -1,7 +1,7 @@
 /**
  * Chaos-mode integration tests for InsightsPanel.
  *
- * These tests let fetchInsights run against real MSW handlers so the full chain
+ * These tests let fetchInsights run against real MSW handlers, so the full chain
  * (network → Zod validation → PII filter → hook state → UI) is exercised.
  * Only getAiConsentToken is mocked to skip the consent round-trip.
  */

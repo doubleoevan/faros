@@ -20,14 +20,13 @@ type RateLimitedCountdownProps = {
 
 function RateLimitedCountdown({ retryAfterSeconds, onRetry }: RateLimitedCountdownProps) {
   const [secondsRemaining, setSecondsRemaining] = useState(retryAfterSeconds)
-  // ref so the effect dep list stays [secondsRemaining] — avoids double-firing when the
-  // parent re-renders with a new handleInsightRetry reference after retryKey increments
-  const onRetryRef = useRef(onRetry)
-  onRetryRef.current = onRetry
+  // ref track the retry countdown without resetting on render
+  const retryCountdownRef = useRef(onRetry)
+  retryCountdownRef.current = onRetry
 
   useEffect(() => {
     if (secondsRemaining <= 0) {
-      onRetryRef.current()
+      retryCountdownRef.current()
       return
     }
     const timer = setTimeout(() => {
@@ -70,7 +69,9 @@ function errorMessageForType(type: InsightsErrorType): string {
   return 'Failed to load insights.'
 }
 
-/** AI-generated activity insights panel with PII filtering, confidence badge, and feedback. */
+/**
+ * AI-generated activity insights panel with PII filtering, confidence badge, and feedback.
+ */
 export function InsightsPanel({ employeeId, onAuthExpired }: InsightsPanelProps) {
   const { insightsState, handleInsightRetry, handleInsightFeedback } =
     useEmployeeInsights(employeeId)

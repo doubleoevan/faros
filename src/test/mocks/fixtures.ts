@@ -59,8 +59,8 @@ export function makeEmployeesResponse(employeeRows: EmployeeRow[]): EmployeesQue
   }
 }
 
-// 10 employees so EMPLOYEES_PAGE_SIZE (5) gives exactly 2 pages — full first page, full last
-// page — without making the multi-page-navigation test slow with extra clicks.
+// 10 employees so EMPLOYEES_PAGE_SIZE (5) gives exactly 2 pages:
+// full first page, full last page without making the multi-page-navigation test slow with extra clicks.
 export const paginationFixtures: EmployeeRow[] = Array.from({ length: 10 }).map((_, index) =>
   makeEmployeeRow({
     id: `emp_${index + 1}`,

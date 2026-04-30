@@ -2,7 +2,9 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-/** Responsive table wrapper with horizontal scroll. From shadcn/ui. */
+/**
+ * Responsive table wrapper with horizontal scroll. From shadcn/ui.
+ */
 export function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <div
@@ -18,7 +20,9 @@ export function Table({ className, ...props }: React.ComponentProps<"table">) {
   )
 }
 
-/** Table head section. From shadcn/ui. */
+/**
+ * Table head section. From shadcn/ui.
+ */
 export function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
@@ -29,7 +33,9 @@ export function TableHeader({ className, ...props }: React.ComponentProps<"thead
   )
 }
 
-/** Table body section. From shadcn/ui. */
+/**
+ * Table body section. From shadcn/ui.
+ */
 export function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
   return (
     <tbody
@@ -40,7 +46,9 @@ export function TableBody({ className, ...props }: React.ComponentProps<"tbody">
   )
 }
 
-/** Table footer section. From shadcn/ui. */
+/**
+ * Table footer section. From shadcn/ui.
+ */
 export function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
   return (
     <tfoot
@@ -54,7 +62,9 @@ export function TableFooter({ className, ...props }: React.ComponentProps<"tfoot
   )
 }
 
-/** Hoverable table row with selected-state styling. From shadcn/ui. */
+/**
+ * Hoverable table row with selected-state styling. From shadcn/ui.
+ */
 export function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   return (
     <tr
@@ -68,7 +78,9 @@ export function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   )
 }
 
-/** Table header cell. From shadcn/ui. */
+/**
+ * Table header cell. From shadcn/ui.
+ */
 export function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   return (
     <th
@@ -82,7 +94,9 @@ export function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   )
 }
 
-/** Table data cell. From shadcn/ui. */
+/**
+ * Table data cell. From shadcn/ui.
+ */
 export function TableCell({ className, ...props }: React.ComponentProps<"td">) {
   return (
     <td
@@ -96,7 +110,9 @@ export function TableCell({ className, ...props }: React.ComponentProps<"td">) {
   )
 }
 
-/** Table caption. From shadcn/ui. */
+/**
+ * Table caption. From shadcn/ui.
+ */
 export function TableCaption({
   className,
   ...props

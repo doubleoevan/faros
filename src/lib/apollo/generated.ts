@@ -6,7 +6,9 @@ export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: 
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
 export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
 export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
-/** All built-in and custom scalars, mapped to their actual values */
+/**
+ * All built-in and custom scalars, mapped to their actual values
+ */
 export type Scalars = {
   ID: { input: string; output: string; }
   String: { input: string; output: string; }
@@ -17,9 +19,13 @@ export type Scalars = {
 
 export type Account = {
   __typename?: 'Account';
-  /** Source system name: GitHub, Jira, PagerDuty, Google Calendar */
+  /**
+   * Source system name: GitHub, Jira, PagerDuty, Google Calendar
+   */
   source: Scalars['String']['output'];
-  /** Account category: vcs, tms, ims, cal */
+  /**
+   * Account category: vcs, tms, ims, cal
+   */
   type: Scalars['String']['output'];
   uid: Scalars['String']['output'];
 };
@@ -58,13 +64,25 @@ export type EmployeeEdge = {
 };
 
 export type EmployeeFilter = {
-  /** Filter by account type(s): vcs, tms, ims, cal. Returns employees with ANY of these. */
+
+  /**
+   * Filter by account type(s): vcs, tms, ims, cal. Returns employees with ANY of these.
+   */
   accountTypes?: InputMaybe<Array<Scalars['String']['input']>>;
-  /** Filter by team UID(s). Returns employees belonging to ANY of the specified teams. */
+
+  /**
+   * Filter by team UID(s). Returns employees belonging to ANY of the specified teams.
+   */
   teams?: InputMaybe<Array<Scalars['String']['input']>>;
-  /** Filter by tracking category: Active, Inactive. */
+
+  /**
+   * Filter by tracking category: Active, Inactive.
+   */
   trackingCategories?: InputMaybe<Array<Scalars['String']['input']>>;
-  /** Filter by tracking status: Included, Ignored. */
+
+  /**
+   * Filter by tracking status: Included, Ignored.
+   */
   trackingStatuses?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
@@ -86,14 +104,21 @@ export type PageInfo = {
 
 export type Query = {
   __typename?: 'Query';
-  /** Single employee by ID or UID. */
+
+  /**
+   * Single employee by ID or UID.
+   */
   employee?: Maybe<Employee>;
+
   /**
    * Paginated, filterable list of employees.
    * Uses cursor-based pagination (Relay-style).
    */
   employees: EmployeeConnection;
-  /** Available filter values (for populating filter dropdowns). */
+
+  /**
+   * Available filter values (for populating filter dropdowns).
+   */
   filterOptions: FilterOptions;
 };
 

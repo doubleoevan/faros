@@ -2,7 +2,9 @@ import { AlertCircle } from 'lucide-react'
 import type { FallbackProps } from 'react-error-boundary'
 import { Button } from '@/components/ui/button'
 
-/** Per-region fallback shown when a render error escapes the InsightsPanel subtree. */
+/**
+ * Per-region fallback shown when a render error escapes the InsightsPanel subtree.
+ */
 export function AiInsightsErrorFallback({ resetErrorBoundary }: FallbackProps) {
   return (
     <section

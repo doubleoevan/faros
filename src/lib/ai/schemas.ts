@@ -1,16 +1,22 @@
 import { z } from 'zod'
 
-/** Confidence scores at or below this threshold are flagged as low-confidence. */
+/**
+ * Confidence scores at or below this threshold are flagged as low-confidence.
+ */
 export const LOW_CONFIDENCE_THRESHOLD = 0.3
 
-/** Zod schema for the POST /api/ai/consent success response. */
+/**
+ * Zod schema for the POST /api/ai/consent success response.
+ */
 export const aiConsentResponseSchema = z.object({
   consentToken: z.string(),
   expiresAt: z.string(),
   scope: z.string(),
 })
 
-/** Zod schema for the GET /api/ai/insights/:employeeId success response. */
+/**
+ * Zod schema for the GET /api/ai/insights/:employeeId success response.
+ */
 export const aiInsightsResponseSchema = z.object({
   employeeId: z.string(),
   employeeUid: z.string(),
@@ -21,7 +27,9 @@ export const aiInsightsResponseSchema = z.object({
   processingTimeMs: z.number(),
 })
 
-/** Partial schema for 429 bodies — extracts retryAfter; other fields are informational. */
+/**
+ * Parses 429 response bodies for `retryAfter`. Other fields are ignored.
+ */
 export const rateLimitBodySchema = z.object({
   retryAfter: z.number(),
 })

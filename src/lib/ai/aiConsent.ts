@@ -18,7 +18,9 @@ function isTokenFresh(cached: CachedToken): boolean {
   return cached.expiresAt.getTime() - Date.now() > EXPIRY_BUFFER_MS
 }
 
-/** Fetches and caches a consent token; returns the cached token if it is still valid. */
+/**
+ * Fetches and caches a consent token; returns the cached token if it is still valid.
+ */
 export async function getAiConsentToken(): Promise<string> {
   if (cachedToken !== null && isTokenFresh(cachedToken)) {
     return cachedToken.token
@@ -48,12 +50,16 @@ export async function getAiConsentToken(): Promise<string> {
   return cachedToken.token
 }
 
-/** Returns true if a valid consent token is already cached; does not fetch a new one. */
+/**
+ * Returns true if a valid consent token is already cached; does not fetch a new one.
+ */
 export function hasValidAiConsentToken(): boolean {
   return cachedToken !== null && isTokenFresh(cachedToken)
 }
 
-/** Clears the in-memory consent token, triggering a fresh fetch on the next call. */
+/**
+ * Clears the in-memory consent token, triggering a fresh fetch on the next call.
+ */
 export function clearAiConsentToken(): void {
   cachedToken = null
 }

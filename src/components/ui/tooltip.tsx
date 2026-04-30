@@ -3,7 +3,9 @@ import { Tooltip as TooltipPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
-/** Provider that controls tooltip delays for the subtree. From shadcn/ui. */
+/**
+ * Provider that controls tooltip delays for the subtree. From shadcn/ui.
+ */
 export function TooltipProvider({
   delayDuration = 0,
   ...props
@@ -17,21 +19,27 @@ export function TooltipProvider({
   )
 }
 
-/** Tooltip root over Radix Tooltip. From shadcn/ui. */
+/**
+ * Tooltip root over Radix Tooltip. From shadcn/ui.
+ */
 export function Tooltip({
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Root>) {
   return <TooltipPrimitive.Root data-slot="tooltip" {...props} />
 }
 
-/** Element that anchors the Tooltip and triggers its open state. From shadcn/ui. */
+/**
+ * Element that anchors the Tooltip and triggers its open state. From shadcn/ui.
+ */
 export function TooltipTrigger({
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {
   return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
 }
 
-/** Animated content panel rendered into a portal next to the trigger. From shadcn/ui. */
+/**
+ * Animated content panel rendered into a portal next to the trigger. From shadcn/ui.
+ */
 export function TooltipContent({
   className,
   sideOffset = 0,
