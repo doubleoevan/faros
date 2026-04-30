@@ -1,0 +1,22 @@
+query Employee($id: ID!) {
+  employee(id: $id) {
+    id
+    uid
+    name
+    email
+    photoUrl
+    inactive
+    trackingStatus
+    trackingCategory
+    teams {
+      id
+      uid
+      name
+    }
+    accounts {
+      type
+      source
+      uid
+    }
+  }
+}

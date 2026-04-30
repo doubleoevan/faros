@@ -4,7 +4,7 @@ import type { CodegenConfig } from '@graphql-codegen/cli'
 // output is committed to src/lib/apollo/generated.ts.
 const config: CodegenConfig = {
   schema: 'http://localhost:4000/graphql',
-  documents: ['src/**/*.{ts,tsx}', '!src/lib/apollo/generated.ts'],
+  documents: ['src/lib/apollo/operations/**/*.graphql'],
   generates: {
     'src/lib/apollo/generated.ts': {
       plugins: ['typescript', 'typescript-operations', 'typed-document-node'],

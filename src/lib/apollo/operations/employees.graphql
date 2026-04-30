@@ -1,0 +1,31 @@
+query Employees($first: Int = 10, $after: String, $search: String, $filter: EmployeeFilter) {
+  employees(first: $first, after: $after, search: $search, filter: $filter) {
+    edges {
+      cursor
+      node {
+        id
+        uid
+        name
+        photoUrl
+        trackingStatus
+        teams {
+          id
+          uid
+          name
+        }
+        accounts {
+          type
+          source
+          uid
+        }
+      }
+    }
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      endCursor
+      startCursor
+    }
+    totalCount
+  }
+}
