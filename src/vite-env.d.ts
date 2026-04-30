@@ -2,7 +2,7 @@
 
 interface ImportMetaEnv {
   readonly VITE_API_URL: string
-  readonly VITE_AI_FLAG_DEFAULT: string
+  readonly VITE_FEATURE_AI_INSIGHTS: string
   readonly VITE_TELEMETRY_ENABLED: string
 }
 
