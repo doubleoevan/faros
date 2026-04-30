@@ -1,8 +1,16 @@
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { render, screen, waitFor } from '@/test/render'
 import { server } from '@/test/mocks/server'
-import { employeesEmptyHandler, employeesErrorHandler } from '@/test/mocks/handlers'
-import { EmployeeTable } from './EmployeeTable'
+import {
+  employeesEmptyHandler,
+  employeesErrorHandler,
+  employeesPagedHandler,
+} from '@/test/mocks/handlers'
+import { paginationFixtures } from '@/test/mocks/fixtures'
+import { EMPLOYEES_PAGE_SIZE, EmployeeTable } from './EmployeeTable'
+
+const TOTAL_FIXTURES = paginationFixtures.length
 
 describe('EmployeeTable', () => {
   it('renders skeleton rows while loading then employees from the response', async () => {
@@ -28,5 +36,63 @@ describe('EmployeeTable', () => {
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent(/failed to load employees/i)
     })
+  })
+})
+
+describe('EmployeeTable pagination', () => {
+  it('shows the page range, advances on Next, and walks back on Previous', async () => {
+    server.use(employeesPagedHandler(paginationFixtures, { pageSize: EMPLOYEES_PAGE_SIZE }))
+    const user = userEvent.setup()
+    render(<EmployeeTable />)
+
+    expect(await screen.findByText('Employee 1')).toBeInTheDocument()
+    expect(screen.getByText(`Employee ${EMPLOYEES_PAGE_SIZE}`)).toBeInTheDocument()
+    expect(screen.queryByText(`Employee ${EMPLOYEES_PAGE_SIZE + 1}`)).not.toBeInTheDocument()
+    expect(screen.getByText(`1-${EMPLOYEES_PAGE_SIZE} of ${TOTAL_FIXTURES}`)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /previous page/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /next page/i })).toBeEnabled()
+
+    await user.click(screen.getByRole('button', { name: /next page/i }))
+    expect(await screen.findByText(`Employee ${EMPLOYEES_PAGE_SIZE + 1}`)).toBeInTheDocument()
+    expect(screen.getByText(`Employee ${TOTAL_FIXTURES}`)).toBeInTheDocument()
+    expect(screen.queryByText('Employee 1')).not.toBeInTheDocument()
+    expect(
+      await screen.findByText(`${EMPLOYEES_PAGE_SIZE + 1}-${TOTAL_FIXTURES} of ${TOTAL_FIXTURES}`),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /previous page/i })).toBeEnabled()
+
+    await user.click(screen.getByRole('button', { name: /previous page/i }))
+    expect(await screen.findByText('Employee 1')).toBeInTheDocument()
+    expect(screen.getByText(`1-${EMPLOYEES_PAGE_SIZE} of ${TOTAL_FIXTURES}`)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /previous page/i })).toBeDisabled()
+  })
+
+  it('disables Next on the final page', async () => {
+    server.use(employeesPagedHandler(paginationFixtures, { pageSize: EMPLOYEES_PAGE_SIZE }))
+    const user = userEvent.setup()
+    render(<EmployeeTable />)
+
+    await screen.findByText('Employee 1')
+    await user.click(screen.getByRole('button', { name: /next page/i }))
+
+    expect(await screen.findByText(`Employee ${TOTAL_FIXTURES}`)).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled()
+    })
+  })
+
+  it('restores both arrows on refresh by reading the trail from the URL', async () => {
+    server.use(employeesPagedHandler(paginationFixtures, { pageSize: EMPLOYEES_PAGE_SIZE }))
+    // simulate a refreshed mid-pagination URL where the trail came along for the ride.
+    window.history.replaceState(null, '', `/?cursor=${String(EMPLOYEES_PAGE_SIZE - 1)}`)
+    const user = userEvent.setup()
+    render(<EmployeeTable />)
+
+    expect(await screen.findByText(`Employee ${EMPLOYEES_PAGE_SIZE + 1}`)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /previous page/i })).toBeEnabled()
+
+    await user.click(screen.getByRole('button', { name: /previous page/i }))
+    expect(await screen.findByText('Employee 1')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /previous page/i })).toBeDisabled()
   })
 })

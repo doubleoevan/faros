@@ -9,9 +9,7 @@ export const apolloClient = new ApolloClient({
       // employees can be looked up by id from list rows or detail query — same cache entry.
       Employee: { keyFields: ['id'] },
       Team: { keyFields: ['id'] },
-      // Account.uid echoes the employee's uid (not a per-account id), so accounts have no
-      // stable unique key. keep them embedded inline; normalizing collapses an employee's
-      // accounts into a single cache entry and breaks the icon list.
+      // Account.uid echoes the employee's uid; normalizing collapses accounts. keep inline.
       Account: { keyFields: false },
     },
   }),

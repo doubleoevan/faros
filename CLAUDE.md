@@ -159,6 +159,8 @@ When in doubt about API behavior:
 
 ## Naming conventions
 
+**Self-documenting names.** A reader should be able to tell what a variable is from its name alone, without inferring from surrounding code or domain vocabulary. Prefer the plain meaning over the technical-spec term when they diverge — e.g., `currentPageSize` (the count of items rendered now) over `edgeCount` (Relay-spec word for the same thing). Plural URL keys plural — `cursors` for `?cursor=A,B,C`, not `trail` or `stack`.
+
 No abbreviations or acronyms in variable names. Write the full word, always.
 
 - `res` → `response`
@@ -180,7 +182,7 @@ No abbreviations or acronyms in variable names. Write the full word, always.
 
 - Place the comment **above** the block it describes. Never inline at the end of a line.
 - One comment per logical group of lines; the comment acts as the visual separator. No blank line between comment and code.
-- Keep comments short and lowercase: `// close the menu on escape key press`, `// parse the request body`.
+- **Single line, lowercase, concise.** A comment must fit on one line. If it doesn't, trim it — "concise but clear" wins over "comprehensive." Multi-paragraph rationale belongs in a DEC entry, not the source.
 - JSX section comments use `{/* section name */}` — simple, no decorators or dividers.
 
 ```typescript

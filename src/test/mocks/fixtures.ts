@@ -1,8 +1,8 @@
 import type { EmployeesQuery } from '@/lib/apollo/generated'
 
-type EmployeeNode = EmployeesQuery['employees']['edges'][number]['node']
+type EmployeeRow = EmployeesQuery['employees']['edges'][number]['node']
 
-export function makeEmployeeNode(overrides: Partial<EmployeeNode> = {}): EmployeeNode {
+export function makeEmployeeRow(overrides: Partial<EmployeeRow> = {}): EmployeeRow {
   return {
     __typename: 'Employee',
     id: 'emp_1',
@@ -19,31 +19,40 @@ export function makeEmployeeNode(overrides: Partial<EmployeeNode> = {}): Employe
   }
 }
 
-export function makeEmployeesResponse(nodes: EmployeeNode[]): EmployeesQuery {
+export function makeEmployeesResponse(employeeRows: EmployeeRow[]): EmployeesQuery {
   return {
     __typename: 'Query',
     employees: {
       __typename: 'EmployeeConnection',
-      totalCount: nodes.length,
-      edges: nodes.map((node, index) => ({
+      totalCount: employeeRows.length,
+      edges: employeeRows.map((employee, index) => ({
         __typename: 'EmployeeEdge',
         cursor: `cursor_${index}`,
-        node,
+        node: employee,
       })),
       pageInfo: {
         __typename: 'PageInfo',
         hasNextPage: false,
         hasPreviousPage: false,
-        startCursor: nodes.length > 0 ? 'cursor_0' : null,
-        endCursor: nodes.length > 0 ? `cursor_${nodes.length - 1}` : null,
+        startCursor: employeeRows.length > 0 ? 'cursor_0' : null,
+        endCursor: employeeRows.length > 0 ? `cursor_${employeeRows.length - 1}` : null,
       },
     },
   }
 }
 
-export const employeeFixtures: EmployeeNode[] = [
-  makeEmployeeNode({ id: 'emp_1', uid: 'uid_1', name: 'Ada Lovelace' }),
-  makeEmployeeNode({
+// 30 employees so EMPLOYEES_PAGE_SIZE pages flip hasNextPage between full and partial.
+export const paginationFixtures: EmployeeRow[] = Array.from({ length: 30 }).map((_, index) =>
+  makeEmployeeRow({
+    id: `emp_${index + 1}`,
+    uid: `uid_${index + 1}`,
+    name: `Employee ${index + 1}`,
+  }),
+)
+
+export const employeeFixtures: EmployeeRow[] = [
+  makeEmployeeRow({ id: 'emp_1', uid: 'uid_1', name: 'Ada Lovelace' }),
+  makeEmployeeRow({
     id: 'emp_2',
     uid: 'uid_2',
     name: 'Grace Hopper',
@@ -51,7 +60,7 @@ export const employeeFixtures: EmployeeNode[] = [
     teams: [{ __typename: 'Team', id: 'team_2', uid: 'compilers', name: 'Compilers' }],
     accounts: [{ __typename: 'Account', type: 'cal', source: 'Google Calendar', uid: 'cal_grace' }],
   }),
-  makeEmployeeNode({
+  makeEmployeeRow({
     id: 'emp_3',
     uid: 'uid_3',
     name: null,

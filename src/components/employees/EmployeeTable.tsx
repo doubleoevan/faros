@@ -1,3 +1,4 @@
+import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -12,15 +13,52 @@ import type { EmployeesQuery } from '@/lib/apollo/generated'
 import { useEmployees } from '@/lib/hooks/useEmployees'
 import { cn } from '@/lib/utils'
 import { AccountIcons } from './AccountIcons'
+import { EmployeePagination } from './EmployeePagination'
 import { EmployeeStatusBadge } from './EmployeeStatusBadge'
 
+export const EMPLOYEES_PAGE_SIZE = 25
 const SKELETON_ROW_COUNT = 6
 const COLUMN_COUNT = 4
 
-type EmployeeNode = EmployeesQuery['employees']['edges'][number]['node']
+type EmployeeRow = EmployeesQuery['employees']['edges'][number]['node']
 
 export function EmployeeTable({ className }: { className?: string }) {
-  const { data, loading, error } = useEmployees({ first: 25 })
+  // URL holds the forward trail (?cursor=A,B,C) so refresh and manual edits restore Prev.
+  const [cursors, setCursors] = useQueryState(
+    'cursor',
+    parseAsArrayOf(parseAsString).withDefault([]),
+  )
+  const currentCursor = cursors.length > 0 ? (cursors[cursors.length - 1] ?? null) : null
+
+  const { data, loading, error } = useEmployees({
+    first: EMPLOYEES_PAGE_SIZE,
+    after: currentCursor,
+  })
+
+  const totalCount = data?.employees.totalCount ?? 0
+  const currentPageSize = data?.employees.edges.length ?? 0
+  // assumes prior pages were full; resolver guarantees that outside the last page.
+  const pageOffset = cursors.length * EMPLOYEES_PAGE_SIZE
+  const pageStart = totalCount === 0 || currentPageSize === 0 ? 0 : pageOffset + 1
+  const pageEnd = pageStart === 0 ? 0 : pageOffset + currentPageSize
+  const canGoNext = data?.employees.pageInfo.hasNextPage ?? false
+  const canGoPrevious = cursors.length > 0
+
+  // skip fetchMore: it writes to the original cache slot, then the URL change double-fetches.
+  const onNext = async () => {
+    const endCursor = data?.employees.pageInfo.endCursor
+    if (!endCursor) {
+      return
+    }
+    await setCursors([...cursors, endCursor])
+  }
+
+  const onPrevious = async () => {
+    if (cursors.length === 0) {
+      return
+    }
+    await setCursors(cursors.slice(0, -1))
+  }
 
   return (
     <div className={cn('rounded-md border', className)}>
@@ -41,6 +79,17 @@ export function EmployeeTable({ className }: { className?: string }) {
           />
         </TableBody>
       </Table>
+      <EmployeePagination
+        pageStart={pageStart}
+        pageEnd={pageEnd}
+        totalCount={totalCount}
+        canGoPrevious={canGoPrevious}
+        canGoNext={canGoNext}
+        isLoading={loading}
+        onPrevious={onPrevious}
+        onNext={onNext}
+        className="border-t"
+      />
     </div>
   )
 }
@@ -87,7 +136,7 @@ function EmployeeTableContents({
   )
 }
 
-function EmployeeTableRow({ employee }: { employee: EmployeeNode }) {
+function EmployeeTableRow({ employee }: { employee: EmployeeRow }) {
   const displayName = employee.name ?? 'Unnamed'
   const initials = toInitials(employee.name)
   const teamLabel = employee.teams.map((team) => team.name).join(', ') || '—'
@@ -145,14 +194,14 @@ function toInitials(name: string | null | undefined): string {
   if (!name) {
     return '?'
   }
-  const parts = name
+  const nameParts = name
     .split(/\s+/)
     .map((part) => part.trim())
     .filter(Boolean)
-  if (parts.length === 0) {
+  if (nameParts.length === 0) {
     return '?'
   }
-  const first = parts[0]?.[0] ?? ''
-  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? '') : ''
-  return (first + last).toUpperCase() || '?'
+  const firstInitial = nameParts[0]?.[0] ?? ''
+  const lastInitial = nameParts.length > 1 ? (nameParts.at(-1)?.[0] ?? '') : ''
+  return (firstInitial + lastInitial).toUpperCase() || '?'
 }
