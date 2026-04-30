@@ -11,6 +11,9 @@ afterEach(async () => {
   server.resetHandlers()
   // reset Apollo cache so cached data from a previous test doesn't bleed into the next.
   await apolloClient.clearStore()
+  // drain any pending nuqs throttle timers (50 ms default) before resetting the URL.
+  // without this, a deferred flush from one test can fire against the next test's URL.
+  await new Promise((resolve) => setTimeout(resolve, 100))
   // reset the URL so nuqs-driven state (e.g., ?cursor=) doesn't leak between tests.
   // popstate notifies nuqs's internal store; replaceState alone is silent.
   window.history.replaceState(null, '', '/')
