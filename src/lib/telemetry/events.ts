@@ -36,8 +36,8 @@ export const events = {
   aiInsightsTimeout: (employeeId: string) => makeEvent('ai.insights.timeout', { employeeId }),
   aiInsightsRateLimited: (employeeId: string, retryAfterSeconds: number) =>
     makeEvent('ai.insights.rate_limited', { employeeId, retryAfterSeconds }),
-  aiInsightsFailed: (employeeId: string, kind: string) =>
-    makeEvent('ai.insights.failed', { employeeId, kind }),
+  aiInsightsFailed: (employeeId: string, type: string) =>
+    makeEvent('ai.insights.failed', { employeeId, type }),
   aiFeedbackSubmitted: (employeeId: string, rating: 'up' | 'down', responseHash: string) =>
     makeEvent('ai.feedback.submitted', { employeeId, rating, responseHash }),
   errorBoundaryTriggered: (boundary: string, errorMessage: string) =>
