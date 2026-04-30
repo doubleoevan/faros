@@ -10,6 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import type { EmployeesQuery } from '@/lib/apollo/generated'
+import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue'
 import { useEmployees } from '@/lib/hooks/useEmployees'
 import { cn } from '@/lib/utils'
 import { AccountIcons } from './AccountIcons'
@@ -17,6 +18,7 @@ import { EmployeePagination } from './EmployeePagination'
 import { EmployeeStatusBadge } from './EmployeeStatusBadge'
 
 export const EMPLOYEES_PAGE_SIZE = 25
+const SEARCH_DEBOUNCE_MS = 300
 const SKELETON_ROW_COUNT = 6
 const COLUMN_COUNT = 4
 
@@ -28,11 +30,14 @@ export function EmployeeTable({ className }: { className?: string }) {
     'cursor',
     parseAsArrayOf(parseAsString).withDefault([]),
   )
+  const [search] = useQueryState('q', parseAsString)
+  const debouncedSearch = useDebouncedValue(search ?? '', SEARCH_DEBOUNCE_MS)
   const currentCursor = cursors.length > 0 ? (cursors[cursors.length - 1] ?? null) : null
 
   const { data, loading, error } = useEmployees({
     first: EMPLOYEES_PAGE_SIZE,
     after: currentCursor,
+    search: debouncedSearch || undefined,
   })
 
   const totalCount = data?.employees.totalCount ?? 0
@@ -145,7 +150,7 @@ function EmployeeTableRow({ employee }: { employee: EmployeeRow }) {
       <TableCell className="py-3">
         <div className="flex items-center gap-3">
           <Avatar size="sm">
-            {employee.photoUrl ? <AvatarImage src={employee.photoUrl} alt={displayName} /> : null}
+            {employee.photoUrl && <AvatarImage src={employee.photoUrl} alt={displayName} />}
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <span className="font-medium">{displayName}</span>

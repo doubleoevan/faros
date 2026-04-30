@@ -1,3 +1,4 @@
+import { EmployeeSearch } from '@/components/employees/EmployeeSearch'
 import { EmployeeTable } from '@/components/employees/EmployeeTable'
 
 export function EmployeesDashboard() {
@@ -10,6 +11,7 @@ export function EmployeesDashboard() {
           and manage their connected accounts.
         </p>
       </header>
+      <EmployeeSearch />
       <EmployeeTable />
     </main>
   )

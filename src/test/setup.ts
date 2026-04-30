@@ -12,6 +12,8 @@ afterEach(async () => {
   // reset Apollo cache so cached data from a previous test doesn't bleed into the next.
   await apolloClient.clearStore()
   // reset the URL so nuqs-driven state (e.g., ?cursor=) doesn't leak between tests.
+  // popstate notifies nuqs's internal store; replaceState alone is silent.
   window.history.replaceState(null, '', '/')
+  window.dispatchEvent(new PopStateEvent('popstate'))
 })
 afterAll(() => server.close())

@@ -5,6 +5,7 @@ import { employeeFixtures, makeEmployeesResponse } from './fixtures'
 type EmployeesVariables = {
   first?: number | null
   after?: string | null
+  search?: string | null
 }
 
 type EmployeeRow = EmployeesQuery['employees']['edges'][number]['node']
@@ -15,6 +16,17 @@ export const handlers = [
     return HttpResponse.json({ data: makeEmployeesResponse(employeeFixtures) })
   }),
 ]
+
+// search-aware handler that filters fixtures by case-insensitive name match.
+export function employeesSearchHandler(employeeRows: EmployeeRow[]) {
+  return graphql.query<EmployeesQuery, EmployeesVariables>('Employees', ({ variables }) => {
+    const term = variables.search?.toLowerCase().trim() ?? ''
+    const matches = term
+      ? employeeRows.filter((employee) => employee.name?.toLowerCase().includes(term))
+      : employeeRows
+    return HttpResponse.json({ data: makeEmployeesResponse(matches) })
+  })
+}
 
 export function employeesEmptyHandler() {
   return graphql.query<EmployeesQuery>('Employees', () => {

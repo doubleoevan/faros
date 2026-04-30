@@ -26,7 +26,7 @@ Treat this as a full project, not a throwaway. Documentation, tests, CI, and con
 ## Workflow
 
 - **One task = one commit, pushed directly to `main`.** Trunk-based — no branches, no PRs. Conventional commits exactly as written in the Sprint / Tasks page (`feat:`, `chore:`, `docs:`, `test:`, `style:`). Run `pnpm typecheck && pnpm lint && pnpm test:run` before every push so `main` stays green.
-- **Stop before committing.** After implementing a task and running the local checks, show the diff and the proposed commit message, then wait for explicit approval before running `git add`, `git commit`, or `git push`. Never commit without approval.
+- **The user commits manually.** Claude never runs `git add`, `git commit`, or `git push` — the user reviews changes in Cursor and commits with their own hands. After implementing a task and running the local checks, surface the diff and a proposed commit message for the user's reference, then stop. When the user moves on to the next task, treat it as confirmation the previous task was committed.
 - **Sequential.** Don't skip ahead — Phase 0 unblocks Phase 1, etc.
 - **Don't mark a task 🟢 until the deliverable exists.** "Done" means the artifact named in the task (file, Notion section, schema entry) is actually present and the listed acceptance criteria are met. If unsure, leave it 🟡 and flag in the response.
 - **Pause at the end of each phase.** Don't roll forward into the next phase without an explicit go-ahead.
@@ -196,6 +196,26 @@ if (!result.success) {
 ```
 
 ---
+
+## JSDoc on lib exports
+
+Every public export from `src/lib/` (hooks, utility functions, providers) gets a single-line JSDoc above the declaration. Same conciseness rule as `//` comments — one line, lowercase first word, no multi-paragraph rationale. The goal is hover-on-import discoverability, not documentation.
+
+```ts
+/** Returns `value` delayed by `delayMs`; resets the timer on every change. */
+export function useDebouncedValue<T>(value: T, delayMs: number): T { ... }
+```
+
+shadcn UI primitives in `src/components/ui/` already follow this; extend it to `src/lib/`. Type aliases, constants, and React contexts can skip JSDoc when their name is already self-documenting (`FeatureFlagName`, `defaultFeatureFlags`).
+
+## Conditional JSX
+
+Prefer `cond && <X />` over `cond ? <X /> : null` when the condition is non-numeric (string, boolean, object, array). The `&&` form returns the falsy value when the left side is falsy — React renders `null`/`undefined`/`false`/`""` as nothing, but renders `0` and `NaN` as text. So:
+
+- ✅ `{user.name && <Greeting name={user.name} />}` — `name` is `string | null | undefined`, safe.
+- ❌ `{items.length && <List items={items} />}` — renders `"0"` when empty. Use ternary or `items.length > 0 && ...`.
+
+When the condition is or could be a number, keep the ternary or coerce explicitly: `cond ? <X /> : null`, `cond > 0 && <X />`, `Boolean(cond) && <X />`.
 
 ## Brace style
 
