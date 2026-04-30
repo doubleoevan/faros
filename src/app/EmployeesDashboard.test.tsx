@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { render, screen, waitFor } from '@/test/render'
 import { server } from '@/test/mocks/server'
 import { employeesSearchHandler, filterOptionsHandler } from '@/test/mocks/handlers'
-import { employeeFixtures } from '@/test/mocks/fixtures'
+import { employeeFixtures, makeEmployeeRow } from '@/test/mocks/fixtures'
 import { EmployeeSearch } from '@/components/employees/EmployeeSearch'
 import { EmployeesDashboard } from './EmployeesDashboard'
 
@@ -98,6 +98,42 @@ describe('EmployeesDashboard', () => {
     await waitFor(() => {
       expect(window.location.search).toContain('status=Ignored')
     })
+  })
+
+  it('combines status and account filters into the GraphQL request and renders only the intersection', async () => {
+    // bob passes the status filter (Included) but lacks a vcs account — proves both filters
+    // are AND-combined in the request, not just the status one. without him the test couldn't
+    // distinguish "both filters applied" from "only status applied."
+    const fixturesWithDisambiguator = [
+      ...employeeFixtures,
+      makeEmployeeRow({
+        id: 'emp_4',
+        uid: 'uid_4',
+        name: 'Bob Builder',
+        trackingStatus: 'Included',
+        accounts: [
+          { __typename: 'Account', type: 'cal', source: 'Google Calendar', uid: 'cal_bob' },
+        ],
+      }),
+    ]
+    server.use(
+      employeesSearchHandler(fixturesWithDisambiguator),
+      filterOptionsHandler(fixturesWithDisambiguator),
+    )
+    // preset both filters via URL — avoids fragile multi-dropdown click sequences in happy-dom.
+    window.history.replaceState(null, '', '/?status=Included&account=vcs')
+    window.dispatchEvent(new PopStateEvent('popstate'))
+
+    render(<EmployeesDashboard />)
+
+    // ada passes both filters (Included + vcs).
+    expect(await screen.findByText('Ada Lovelace')).toBeInTheDocument()
+    // grace fails status, bob passes status but fails account — both are excluded only when
+    // both filters are applied together.
+    expect(screen.queryByText('Grace Hopper')).not.toBeInTheDocument()
+    expect(screen.queryByText('Bob Builder')).not.toBeInTheDocument()
+    expect(window.location.search).toContain('status=Included')
+    expect(window.location.search).toContain('account=vcs')
   })
 
   it('reset clears every active filter at once', async () => {
