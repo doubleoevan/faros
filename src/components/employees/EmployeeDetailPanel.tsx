@@ -2,6 +2,7 @@ import { X } from 'lucide-react'
 import { useQuery } from '@apollo/client'
 import { useEffect } from 'react'
 import { parseAsString, useQueryState } from 'nuqs'
+import { ErrorBoundary } from 'react-error-boundary'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -12,6 +13,7 @@ import { useFeatureFlag } from '@/lib/feature-flags'
 import { useAiConsent } from '@/lib/hooks/useAiConsent'
 import { emit, events } from '@/lib/telemetry'
 import { AiConsentPrompt } from '@/components/ai/AiConsentPrompt'
+import { AiInsightsErrorFallback } from '@/components/ai/AiInsightsErrorFallback'
 import { InsightsPanel } from '@/components/ai/InsightsPanel'
 import { AccountIcons } from './AccountIcons'
 import { EmployeeStatusBadge } from './EmployeeStatusBadge'
@@ -127,7 +129,21 @@ function AiInsightsSection({ employee }: { employee: Employee }) {
     )
   }
 
-  return <AiConsentGate employee={employee} />
+  return (
+    <ErrorBoundary
+      FallbackComponent={AiInsightsErrorFallback}
+      onError={(error) => {
+        emit(
+          events.errorBoundaryTriggered(
+            'ai-insights',
+            error instanceof Error ? error.message : String(error),
+          ),
+        )
+      }}
+    >
+      <AiConsentGate employee={employee} />
+    </ErrorBoundary>
+  )
 }
 
 function AiConsentGate({ employee }: { employee: Employee }) {

@@ -9,6 +9,9 @@ export default mergeConfig(
       globals: false,
       setupFiles: ['./src/test/setup.ts'],
       css: true,
+      env: {
+        VITE_TELEMETRY_ENABLED: 'false',
+      },
     },
   }),
 )

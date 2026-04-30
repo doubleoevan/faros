@@ -1,6 +1,22 @@
+import type { AiInsightsResponse } from '@/lib/ai'
 import type { EmployeesQuery } from '@/lib/apollo/generated'
 
 type EmployeeRow = EmployeesQuery['employees']['edges'][number]['node']
+
+export function makeInsightsResponse(
+  overrides: Partial<AiInsightsResponse> = {},
+): AiInsightsResponse {
+  return {
+    employeeId: 'emp_01',
+    employeeUid: 'lando',
+    summary: 'Lando Calrissian has been actively contributing to the platform team.',
+    confidence: 0.85,
+    generatedAt: new Date().toISOString(),
+    model: 'faros-insights-v1',
+    processingTimeMs: 1200,
+    ...overrides,
+  }
+}
 
 export function makeEmployeeRow(overrides: Partial<EmployeeRow> = {}): EmployeeRow {
   return {

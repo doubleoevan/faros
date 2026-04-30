@@ -1,4 +1,4 @@
-import { graphql, HttpResponse } from 'msw'
+import { delay, graphql, http, HttpResponse } from 'msw'
 import type {
   EmployeeFilter,
   EmployeeQuery,
@@ -6,7 +6,56 @@ import type {
   EmployeesQuery,
   FilterOptionsQuery,
 } from '@/lib/apollo/generated'
-import { employeeFixtures, makeEmployeesResponse } from './fixtures'
+import { employeeFixtures, makeEmployeesResponse, makeInsightsResponse } from './fixtures'
+
+const AI_BASE = 'http://localhost:4000'
+export const AI_INSIGHTS_URL = `${AI_BASE}/api/ai/insights/:employeeId`
+
+/** Returns a 200 response with normal confidence and no PII. */
+export function aiInsightsSuccessHandler() {
+  return http.get(AI_INSIGHTS_URL, () => HttpResponse.json(makeInsightsResponse()))
+}
+
+/** Returns a 200 response with confidence below the low-confidence threshold (0.2). */
+export function aiInsightsLowConfidenceHandler() {
+  return http.get(AI_INSIGHTS_URL, () =>
+    HttpResponse.json(makeInsightsResponse({ confidence: 0.2 })),
+  )
+}
+
+/** Returns a 200 response whose summary contains a phone number that the PII filter must redact. */
+export function aiInsightsPiiHandler() {
+  return http.get(AI_INSIGHTS_URL, () =>
+    HttpResponse.json(
+      makeInsightsResponse({ summary: 'Call (555) 123-4567 to discuss the quarterly review.' }),
+    ),
+  )
+}
+
+/** Hangs indefinitely, triggering the AbortController timeout in fetchInsights. */
+export function aiInsightsTimeoutHandler() {
+  return http.get(AI_INSIGHTS_URL, async () => {
+    await delay('infinite')
+    return HttpResponse.json(makeInsightsResponse())
+  })
+}
+
+/** Returns a 429 with a retryAfter body so the rate-limit countdown is shown. */
+export function aiInsightsRateLimitHandler(retryAfter = 32) {
+  return http.get(AI_INSIGHTS_URL, () =>
+    HttpResponse.json(
+      { error: 'AI rate limit exceeded', retryAfter, message: `Retry in ${retryAfter}s.` },
+      { status: 429 },
+    ),
+  )
+}
+
+/** Always returns 500 so both the first attempt and the single retry fail. */
+export function aiInsightsServerErrorHandler() {
+  return http.get(AI_INSIGHTS_URL, () =>
+    HttpResponse.json({ error: 'Internal server error' }, { status: 500 }),
+  )
+}
 
 type EmployeesVariables = {
   first?: number | null
