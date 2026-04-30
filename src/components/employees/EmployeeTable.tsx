@@ -282,11 +282,11 @@ function EmployeeTableRow({ employee }: { employee: EmployeeRow }) {
   const initials = toInitials(employee.name)
   const isSelected = viewId === employee.id
   return (
-    <TableRow data-state={isSelected ? 'selected' : undefined}>
+    <TableRow data-state={isSelected ? 'selected' : undefined} className="group">
       <TableCell
         className={cn(
           'sticky left-0 z-10 border-r py-3',
-          isSelected ? 'bg-muted' : 'bg-background',
+          isSelected ? 'bg-muted' : 'bg-background group-hover:bg-muted/50',
         )}
       >
         <div className="flex items-center gap-3">
@@ -317,7 +317,7 @@ function EmployeeTableRow({ employee }: { employee: EmployeeRow }) {
       <TableCell
         className={cn(
           'sticky right-0 z-10 border-l py-3 text-center',
-          isSelected ? 'bg-muted' : 'bg-background',
+          isSelected ? 'bg-muted' : 'bg-background group-hover:bg-muted/50',
         )}
       >
         <Button
