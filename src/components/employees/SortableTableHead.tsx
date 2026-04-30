@@ -7,7 +7,7 @@ import { sortDirectionForField } from './sort'
 export type SortableTableHeadProps = {
   field: string
   currentSort: string | null
-  onSort: () => void
+  onTableSort: () => void
   className?: string
   children: ReactNode
 }
@@ -16,7 +16,7 @@ export type SortableTableHeadProps = {
 export function SortableTableHead({
   field,
   currentSort,
-  onSort,
+  onTableSort,
   className,
   children,
 }: SortableTableHeadProps) {
@@ -29,7 +29,7 @@ export function SortableTableHead({
     <TableHead className={className} aria-sort={ariaSort}>
       <button
         type="button"
-        onClick={onSort}
+        onClick={onTableSort}
         className="hover:text-foreground inline-flex cursor-pointer items-center gap-1 transition-colors"
       >
         {children}

@@ -5,6 +5,7 @@ import { render, screen, waitFor } from '@/test/render'
 import { server } from '@/test/mocks/server'
 import { employeesSearchHandler, filterOptionsHandler } from '@/test/mocks/handlers'
 import { employeeFixtures } from '@/test/mocks/fixtures'
+import { EmployeeSearch } from '@/components/employees/EmployeeSearch'
 import { EmployeesDashboard } from './EmployeesDashboard'
 
 // helper component that writes ?q= via nuqs from outside EmployeeSearch — stand-in for
@@ -116,12 +117,49 @@ describe('EmployeesDashboard', () => {
     expect(screen.queryByRole('button', { name: /reset filters/i })).not.toBeInTheDocument()
   })
 
+  it('opens the detail panel from a row View button without refetching', async () => {
+    server.use(employeesSearchHandler(employeeFixtures), filterOptionsHandler(employeeFixtures))
+    const user = userEvent.setup()
+    render(<EmployeesDashboard />)
+
+    await screen.findByText('Ada Lovelace')
+
+    // count Employees requests so we can prove opening the panel doesn't trigger another one.
+    let employeesRequests = 0
+    server.events.on('request:start', ({ request }) => {
+      if (request.method !== 'POST') {
+        return
+      }
+      void request
+        .clone()
+        .text()
+        .then((body) => {
+          if (body.includes('"operationName":"Employees"')) {
+            employeesRequests += 1
+          }
+        })
+    })
+
+    await user.click(screen.getByRole('button', { name: /view ada lovelace/i }))
+
+    const panel = await screen.findByRole('dialog')
+    expect(panel).toHaveTextContent('Ada Lovelace')
+    expect(screen.getByTestId('ai-insights-mount')).toBeInTheDocument()
+    // nuqs throttles URL writes — wait for the flush before asserting.
+    await waitFor(() => {
+      expect(window.location.search).toContain('view=emp_1')
+    })
+    expect(employeesRequests).toBe(0)
+  })
+
   it('updates the search input when ?q= changes from outside the component', async () => {
     server.use(employeesSearchHandler(employeeFixtures))
     const user = userEvent.setup()
+    // render the search in isolation so a leftover ?view= from a prior test can't
+    // open the detail Sheet (which is modal and aria-hides the rest of the tree).
     render(
       <>
-        <EmployeesDashboard />
+        <EmployeeSearch />
         <ExternalQuerySetter to="external" />
       </>,
     )

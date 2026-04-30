@@ -24,19 +24,21 @@ export function EmployeeFilters({ className }: { className?: string }) {
   const accountTypeOptions = data?.filterOptions.accountTypes ?? []
   const hasActiveFilter = teams.length + statuses.length + accountTypes.length > 0
 
-  const toggle = async (
-    setter: (value: string[]) => Promise<URLSearchParams>,
-    current: string[],
-    value: string,
-    next: boolean,
+  const handleFilterChange = async (
+    setFilters: (value: string[]) => Promise<URLSearchParams>,
+    filters: string[],
+    filterValue: string,
+    isFiltered: boolean,
   ) => {
-    const updated = next ? [...current, value] : current.filter((entry) => entry !== value)
-    await setter(updated)
+    const updatedFilters = isFiltered
+      ? [...filters, filterValue]
+      : filters.filter((entry) => entry !== filterValue)
+    await setFilters(updatedFilters)
     // any filter change reshapes the result set; the existing cursor trail no longer applies.
     await setCursors([])
   }
 
-  const onReset = async () => {
+  const handleFilterReset = async () => {
     await Promise.all([setTeams([]), setStatuses([]), setAccountTypes([]), setCursors([])])
   }
 
@@ -47,14 +49,18 @@ export function EmployeeFilters({ className }: { className?: string }) {
         selectedCount={teams.length}
         options={teamOptions.map((team) => ({ value: team.uid, label: team.name }))}
         selectedValues={teams}
-        onToggle={(value, next) => toggle(setTeams, teams, value, next)}
+        onFilterChange={(filterValue, isFiltered) =>
+          handleFilterChange(setTeams, teams, filterValue, isFiltered)
+        }
       />
       <FilterDropdown
         label="Status"
         selectedCount={statuses.length}
         options={statusOptions.map((status) => ({ value: status, label: status }))}
         selectedValues={statuses}
-        onToggle={(value, next) => toggle(setStatuses, statuses, value, next)}
+        onFilterChange={(filterValue, isFiltered) =>
+          handleFilterChange(setStatuses, statuses, filterValue, isFiltered)
+        }
       />
       <FilterDropdown
         label="Accounts"
@@ -64,10 +70,12 @@ export function EmployeeFilters({ className }: { className?: string }) {
           label: account.source,
         }))}
         selectedValues={accountTypes}
-        onToggle={(value, next) => toggle(setAccountTypes, accountTypes, value, next)}
+        onFilterChange={(filterValue, isFiltered) =>
+          handleFilterChange(setAccountTypes, accountTypes, filterValue, isFiltered)
+        }
       />
       {hasActiveFilter && (
-        <Button variant="ghost" size="sm" onClick={onReset} aria-label="Reset filters">
+        <Button variant="ghost" size="sm" onClick={handleFilterReset} aria-label="Reset filters">
           <X className="size-4" />
           Reset
         </Button>
@@ -81,7 +89,7 @@ type FilterDropdownProps = {
   selectedCount: number
   options: ReadonlyArray<{ value: string; label: string }>
   selectedValues: ReadonlyArray<string>
-  onToggle: (value: string, next: boolean) => void | Promise<void>
+  onFilterChange: (filterValue: string, isFiltered: boolean) => void | Promise<void>
 }
 
 function FilterDropdown({
@@ -89,7 +97,7 @@ function FilterDropdown({
   selectedCount,
   options,
   selectedValues,
-  onToggle,
+  onFilterChange,
 }: FilterDropdownProps) {
   return (
     <DropdownMenu>
@@ -111,7 +119,7 @@ function FilterDropdown({
             checked={selectedValues.includes(option.value)}
             // prevent the menu from closing on each toggle so the user can pick multiple.
             onSelect={(event) => event.preventDefault()}
-            onCheckedChange={(checked) => onToggle(option.value, Boolean(checked))}
+            onCheckedChange={(checked) => onFilterChange(option.value, Boolean(checked))}
           >
             {option.label}
           </DropdownMenuCheckboxItem>

@@ -9,8 +9,8 @@ export type EmployeePaginationProps = {
   canGoPrevious: boolean
   canGoNext: boolean
   isLoading?: boolean
-  onPrevious: () => void
-  onNext: () => void
+  onPreviousPage: () => void
+  onNextPage: () => void
   className?: string
 }
 
@@ -21,8 +21,8 @@ export function EmployeePagination({
   canGoPrevious,
   canGoNext,
   isLoading,
-  onPrevious,
-  onNext,
+  onPreviousPage,
+  onNextPage,
   className,
 }: EmployeePaginationProps) {
   // empty connection: nothing meaningful to page through
@@ -41,7 +41,7 @@ export function EmployeePagination({
         <Button
           variant="outline"
           size="icon-sm"
-          onClick={onPrevious}
+          onClick={onPreviousPage}
           disabled={!canGoPrevious || isLoading}
           aria-label="Previous page"
         >
@@ -50,7 +50,7 @@ export function EmployeePagination({
         <Button
           variant="outline"
           size="icon-sm"
-          onClick={onNext}
+          onClick={onNextPage}
           disabled={!canGoNext || isLoading}
           aria-label="Next page"
         >

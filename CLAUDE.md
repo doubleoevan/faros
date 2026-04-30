@@ -163,6 +163,10 @@ When in doubt about API behavior:
 
 No abbreviations or acronyms in variable names. Write the full word, always.
 
+**Event-handler prefix.** `on*` is reserved for **props** (received from a parent or framework). Locally-defined handler functions inside a component use `handle*`. Reading `<button onClick={handleClick}>` makes it instantly clear which side is the prop and which side is the local function — avoids the read-time confusion of `<button onClick={onClick}>`. Inline arrows (e.g., `onClick={() => setOpen(true)}`) don't need a name and are fine as-is.
+
+**Handler and callback-prop names include the domain noun.** This applies to both `handle*` locals and `on*` props we define. Don't write `handleChange` / `handleReset` / `onNext` / `onSort` — write `handleSearchChange` / `handleFilterReset` / `onNextPage` / `onTableSort`. The call site reads `<EmployeePagination onNextPage={handleNextPage} />` and `<SortableTableHead onTableSort={handleTableSort('name')}>` — both halves self-documenting at a glance. Generic names (`onClick`, `onChange`, `onOpenChange`) are reserved for third-party props (Radix, shadcn, framework) that we can't rename. Exceptions: when the verb already implies the object — `handleOpenChange` (Sheet/Dialog idiom is well-known), `handleSubmit` on a form — the noun is redundant.
+
 - `res` → `response`
 - `req` → `request`
 - `err` → `error`

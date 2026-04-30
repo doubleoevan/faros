@@ -45,7 +45,7 @@ describe('EmployeeTable sorting', () => {
     render(<EmployeeTable />)
 
     await screen.findByText('Ada Lovelace')
-    const nameHeader = screen.getByRole('button', { name: /name/i })
+    const nameHeader = screen.getByRole('button', { name: 'Name' })
 
     await user.click(nameHeader)
     await waitFor(() => {

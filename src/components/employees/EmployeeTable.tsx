@@ -13,7 +13,8 @@ import {
 import type { EmployeesQuery } from '@/lib/apollo/generated'
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue'
 import { useEmployees } from '@/lib/hooks/useEmployees'
-import { cn } from '@/lib/utils'
+import { cn, compareNullableStrings, toInitials } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 import { AccountIcons } from './AccountIcons'
 import { EmployeePagination } from './EmployeePagination'
 import { EmployeeStatusBadge } from './EmployeeStatusBadge'
@@ -23,7 +24,7 @@ import { SortableTableHead } from './SortableTableHead'
 export const EMPLOYEES_PAGE_SIZE = 25
 const SEARCH_DEBOUNCE_MS = 300
 const SKELETON_ROW_COUNT = 6
-const COLUMN_COUNT = 4
+const COLUMN_COUNT = 5
 
 type EmployeeRow = EmployeesQuery['employees']['edges'][number]['node']
 
@@ -79,7 +80,7 @@ export function EmployeeTable({ className }: { className?: string }) {
   const canGoPrevious = cursors.length > 0
 
   // skip fetchMore: it writes to the original cache slot, then the URL change double-fetches.
-  const onNext = async () => {
+  const handleNextPage = async () => {
     const endCursor = data?.employees.pageInfo.endCursor
     if (!endCursor) {
       return
@@ -87,14 +88,14 @@ export function EmployeeTable({ className }: { className?: string }) {
     await setCursors([...cursors, endCursor])
   }
 
-  const onPrevious = async () => {
+  const handlePreviousPage = async () => {
     if (cursors.length === 0) {
       return
     }
     await setCursors(cursors.slice(0, -1))
   }
 
-  const onSort = (field: string) => () => {
+  const handleTableSort = (field: string) => () => {
     void setSort(nextSortValue(sort, field))
   }
 
@@ -106,21 +107,22 @@ export function EmployeeTable({ className }: { className?: string }) {
             <SortableTableHead
               field="name"
               currentSort={sort}
-              onSort={onSort('name')}
-              className="w-[32%]"
+              onTableSort={handleTableSort('name')}
+              className="w-[28%]"
             >
               Name
             </SortableTableHead>
             <SortableTableHead
               field="trackingStatus"
               currentSort={sort}
-              onSort={onSort('trackingStatus')}
-              className="w-[18%]"
+              onTableSort={handleTableSort('trackingStatus')}
+              className="w-[16%]"
             >
               Tracking Status
             </SortableTableHead>
-            <TableHead className="w-[28%]">Teams</TableHead>
-            <TableHead className="w-[22%]">Accounts Connected</TableHead>
+            <TableHead className="w-[26%]">Teams</TableHead>
+            <TableHead className="w-[20%]">Accounts Connected</TableHead>
+            <TableHead className="w-[10%]" aria-label="Row actions" />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -138,8 +140,8 @@ export function EmployeeTable({ className }: { className?: string }) {
         canGoPrevious={canGoPrevious}
         canGoNext={canGoNext}
         isLoading={loading}
-        onPrevious={onPrevious}
-        onNext={onNext}
+        onPreviousPage={handlePreviousPage}
+        onNextPage={handleNextPage}
         className="border-t"
       />
     </div>
@@ -209,26 +211,8 @@ function sortEmployees(employees: EmployeeRow[] | undefined, sort: string | null
   return employees
 }
 
-function compareNullableStrings(
-  first: string | null | undefined,
-  second: string | null | undefined,
-  direction: 'asc' | 'desc',
-): number {
-  // null/undefined sort to the end regardless of direction.
-  if (!first && !second) {
-    return 0
-  }
-  if (!first) {
-    return 1
-  }
-  if (!second) {
-    return -1
-  }
-  const comparison = first.localeCompare(second)
-  return direction === 'asc' ? comparison : -comparison
-}
-
 function EmployeeTableRow({ employee }: { employee: EmployeeRow }) {
+  const [, setViewId] = useQueryState('view', parseAsString)
   const displayName = employee.name ?? 'Unnamed'
   const initials = toInitials(employee.name)
   const teamLabel = employee.teams.map((team) => team.name).join(', ') || '—'
@@ -251,6 +235,16 @@ function EmployeeTableRow({ employee }: { employee: EmployeeRow }) {
       </TableCell>
       <TableCell className="py-3">
         <AccountIcons accounts={employee.accounts} />
+      </TableCell>
+      <TableCell className="py-3 text-right">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => void setViewId(employee.id)}
+          aria-label={`View ${displayName}`}
+        >
+          View
+        </Button>
       </TableCell>
     </TableRow>
   )
@@ -276,24 +270,11 @@ function EmployeeTableSkeletonRows() {
           <TableCell className="py-3">
             <Skeleton className="h-5 w-24" />
           </TableCell>
+          <TableCell className="py-3 text-right">
+            <Skeleton className="ml-auto h-8 w-14 rounded-md" />
+          </TableCell>
         </TableRow>
       ))}
     </>
   )
-}
-
-function toInitials(name: string | null | undefined): string {
-  if (!name) {
-    return '?'
-  }
-  const nameParts = name
-    .split(/\s+/)
-    .map((part) => part.trim())
-    .filter(Boolean)
-  if (nameParts.length === 0) {
-    return '?'
-  }
-  const firstInitial = nameParts[0]?.[0] ?? ''
-  const lastInitial = nameParts.length > 1 ? (nameParts.at(-1)?.[0] ?? '') : ''
-  return (firstInitial + lastInitial).toUpperCase() || '?'
 }

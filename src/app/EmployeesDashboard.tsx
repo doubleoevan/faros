@@ -1,3 +1,4 @@
+import { EmployeeDetailPanel } from '@/components/employees/EmployeeDetailPanel'
 import { EmployeeFilters } from '@/components/employees/EmployeeFilters'
 import { EmployeeSearch } from '@/components/employees/EmployeeSearch'
 import { EmployeeTable } from '@/components/employees/EmployeeTable'
@@ -15,6 +16,7 @@ export function EmployeesDashboard() {
       <EmployeeSearch />
       <EmployeeFilters />
       <EmployeeTable />
+      <EmployeeDetailPanel />
     </main>
   )
 }

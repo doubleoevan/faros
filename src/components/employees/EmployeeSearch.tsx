@@ -8,13 +8,13 @@ export function EmployeeSearch({ className }: { className?: string }) {
   const [search, setSearch] = useQueryState('q', parseAsString.withOptions({ history: 'replace' }))
   const [, setCursors] = useQueryState('cursor', parseAsArrayOf(parseAsString).withDefault([]))
 
-  const onChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     void setSearch(event.target.value || null)
     // search reshapes the result set; the existing cursor trail no longer applies.
     void setCursors([])
   }
 
-  const onClear = () => {
+  const handleSearchClear = () => {
     void setSearch(null)
     void setCursors([])
   }
@@ -29,7 +29,7 @@ export function EmployeeSearch({ className }: { className?: string }) {
         type="search"
         placeholder="Search employees by name ..."
         value={search ?? ''}
-        onChange={onChange}
+        onChange={handleSearchChange}
         aria-label="Search employees by name"
         // hide the WebKit native cancel button — we render our own for cross-browser parity.
         className="pr-9 pl-9 [&::-webkit-search-cancel-button]:hidden"
@@ -37,7 +37,7 @@ export function EmployeeSearch({ className }: { className?: string }) {
       {search && (
         <button
           type="button"
-          onClick={onClear}
+          onClick={handleSearchClear}
           aria-label="Clear search"
           className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm transition-colors"
         >
