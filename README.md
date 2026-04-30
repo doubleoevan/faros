@@ -1,153 +1,122 @@
-# Faros AI — Frontend Engineering Take-Home: Employee Insights Dashboard
+# Employee Insights Dashboard
 
-## Objective
+A production-grade employee management dashboard with AI-powered activity insights, built against a mock GraphQL and REST API.
 
-Build an employee management dashboard that integrates AI-powered insights. This exercise evaluates your engineering judgment, product thinking, and ability to build production-grade frontend features — not just whether you can render a table.
+- [DECISIONS.md](./DECISIONS.md) — architecture choices, AI workflow, tradeoffs
+- [RUNBOOK.md](./RUNBOOK.md) — AI insights triage guide for production issues
 
-You will work with a **mock API server** that simulates real-world conditions: variable latency, occasional errors, and an AI insights endpoint that behaves like a real LLM service. **The server source code is included** — reading it is encouraged and will help you make better decisions.
+---
 
-## Duration
+## Prerequisites
 
-**~8 hours over a weekend.** Spend your time where it matters most. A polished AI integration with solid production thinking is worth more than pixel-perfect styling.
+- Node.js 20 (`nvm use` picks the version from `.nvmrc`)
+- pnpm — `npm install -g pnpm`
+- The mock server running at `http://localhost:4000` (see below)
 
-## Setup
+---
 
-### Prerequisites
+## Mock server
 
-- Node.js 20+
-- npm or yarn
-- Your preferred frontend framework (React recommended, but not required)
-
-### Start the mock server
+The mock server is not part of this repo. It must be running before starting the app.
 
 ```bash
-cd mock-server
+cd ../mock-server
 npm install
-cp .env.example .env    # Review and adjust settings if desired
+cp .env.example .env
 npm start
 ```
 
-The server runs at `http://localhost:4000` with these endpoints:
+The server listens on `http://localhost:4000` and exposes:
 
-| Endpoint                           | Description                                             |
-| ---------------------------------- | ------------------------------------------------------- |
-| `GET /graphql`                     | GraphQL endpoint (Apollo Sandbox available in browser)  |
-| `POST /api/ai/consent`             | Obtain a consent token for AI features                  |
-| `GET /api/ai/insights/:employeeId` | AI-generated employee insights (requires consent token) |
-| `POST /api/telemetry`              | Accepts structured telemetry events                     |
-| `GET /health`                      | Server health check                                     |
+| Endpoint                           | Description                                       |
+| ---------------------------------- | ------------------------------------------------- |
+| `POST /graphql`                    | GraphQL API (Apollo Sandbox available in browser) |
+| `POST /api/ai/consent`             | Issues consent tokens for AI features             |
+| `GET /api/ai/insights/:employeeId` | AI-generated activity insights                    |
+| `POST /api/telemetry`              | Accepts batched telemetry events                  |
+| `GET /health`                      | Health check                                      |
 
-### Assets
-
-Account type icons are provided in `assets/icons/`:
-
-- `github.png` — VCS (GitHub) accounts
-- `jira.png` — TMS (Jira) accounts
-- `pagerduty.png` — IMS (PagerDuty) accounts
-- `google-calendar.png` — Calendar accounts
-- `faros-logo.svg` — Faros AI logo
+The server deliberately injects chaos: random latency, ~5% GraphQL errors, ~5% AI timeouts, ~15% PII in AI responses, and separate rate limits on GraphQL (60 req/min) and AI (10 req/min). This is intentional — see `RUNBOOK.md` for expected baselines.
 
 ---
 
-## What to build
+## Install
 
-### Part 1 — Employee Dashboard
-
-Build the employee table view based on the [Figma reference](https://www.figma.com/file/nR9Voet7KCWpOYNJzB4O4Z/Frontend-Engineer-Interview-Exercise%3A-Employees-Page?type=design&node-id=5-3055&mode=design).
-
-**Data comes from the GraphQL API** (not a static JSON file). The API uses cursor-based pagination.
-
-Required features:
-
-- Employee table with columns: Name (with avatar), Tracking Status, Teams, Accounts Connected
-- Search by employee name
-- Filter by team, tracking status, and account type
-- Cursor-based pagination
-- "View" button that displays an employee detail panel
-
-The API reflects real-world conditions — you will encounter variability in response times, occasional errors, and data quality issues. How you handle these is part of the evaluation.
-
-**Explore the GraphQL schema** using the Apollo Sandbox at `http://localhost:4000/graphql` to understand available queries, fields, and filter options.
-
-### Part 2 — AI Employee Insights
-
-Add an AI-powered insights feature to the employee detail view.
-
-**Product spec:**
-
-> When viewing an employee, users should be able to see an AI-generated summary of their recent activity. The summary should feel helpful and trustworthy.
-
-That's the full spec. The UX is yours to design. There is no Figma for this part.
-
-The AI insights endpoint is at `GET /api/ai/insights/:employeeId`. It behaves like a real AI service — discover its requirements, capabilities, and limitations as you integrate it. Pay attention to:
-
-- What the API requires before it will respond
-- How it behaves under different conditions
-- What it returns and whether you should display everything it gives you
-
-### Part 3 — Production Readiness
-
-Make your application production-ready:
-
-- **Telemetry**: Instrument your application with structured telemetry. The mock server provides a `POST /api/telemetry` endpoint that accepts events. Decide what to track and why.
-- **Feature flag**: Implement a mechanism to enable/disable the AI insights feature without redeploying.
-- **Error boundaries**: Ensure failures in one part of the application don't crash the whole page.
-- **Runbook**: Write a `RUNBOOK.md` — a one-page guide for triaging issues with the AI insights feature in production. What would you check? In what order? What metrics would you watch?
-
-### Part 4 — Decision Document
-
-Write a `DECISIONS.md` covering:
-
-1. **Architecture choices** — What framework, state management, and patterns did you choose? What tradeoffs did you consider?
-2. **AI development environment and workflow** — Describe your AI-assisted development setup for this project. What tools did you use and how did you configure them? How did you set up your environment to get the best results from AI assistance (e.g., project context, instruction files, custom tools, integrations)? Where did AI output require correction or iteration? What would you change about your workflow for a longer-lived project?
-3. **Data and API challenges** — What data quality or API behavior issues did you encounter? How did you handle them?
-4. **Privacy and security** — What risks did you identify? What did you do about them?
-5. **What you'd do with more time** — If this were going to production, what's missing?
-6. **Testing strategy** — How would you test this application in CI? What would you test for AI-generated content specifically?
+```bash
+pnpm install
+```
 
 ---
 
-## Submission
+## Environment
 
-Submit a link to a **private GitHub repository** containing:
+Copy the example file and adjust as needed:
 
-- Your frontend application source code
-- `DECISIONS.md` in the repo root
-- `RUNBOOK.md` in the repo root
-- A `README.md` with setup and run instructions
+```bash
+cp .env.example .env.local
+```
 
-**Do not include the mock server in your submission** — we have it. Your repo should document that the mock server must be running at `http://localhost:4000`.
-
----
-
-## What we evaluate
-
-We evaluate across five dimensions. These apply whether you're interviewing for Senior or Lead — the expected depth scales with the role.
-
-1. **Technical craft** — Implementation quality, error handling, performance, component design, fallback behavior.
-2. **AI integration and safety** — How you handle the AI feature: consent, content validation, fallback UX, user feedback, edge cases.
-3. **Production and operational thinking** — Telemetry design, feature flags, runbook quality, timeout and retry strategy, degradation behavior.
-4. **Product and UX judgment** — The AI UX you design (no Figma provided), human-in-the-loop flows, loading states, accessibility.
-5. **Communication and self-awareness** — DECISIONS.md quality, tradeoff reasoning, AI development workflow and environment setup.
+| Variable                   | Default                         | Description                                                                                         |
+| -------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `VITE_API_URL`             | `http://localhost:4000/graphql` | GraphQL endpoint (AI base URL is derived from this)                                                 |
+| `VITE_FEATURE_AI_INSIGHTS` | `true`                          | Enables the AI insights panel; set to `false` to show the neutral placeholder with no network calls |
+| `VITE_TELEMETRY_ENABLED`   | `false`                         | `true` flushes events to `/api/telemetry`; `false` logs to console only                             |
 
 ---
 
-## FAQ
+## Running the app
 
-**Can I use AI coding tools (Claude, ChatGPT, Copilot, etc.)?**
-Yes, absolutely — we expect you to. How you use them and how you set up your development environment is part of what we evaluate. Document your approach honestly in DECISIONS.md.
+```bash
+pnpm dev
+```
 
-**Can I use component libraries (shadcn, Radix, MUI, etc.)?**
-Yes. Use whatever helps you ship quality work.
+Opens at `http://localhost:5173`. The mock server must be running first.
 
-**Should I write tests?**
-Write tests where they add value. We'd rather see thoughtful tests for AI content validation than 100% coverage of trivial components.
+---
 
-**What if the mock server seems broken?**
-Read the server source code — the behavior is intentional.
+## Tests
 
-**How closely should I match the Figma?**
-The Figma covers Part 1 (the table). Match it pixel-perfect.
+```bash
+pnpm test          # watch mode
+pnpm test:run      # run once (used in CI)
+pnpm typecheck     # TypeScript — no emit
+pnpm lint          # ESLint
+```
 
-**Should I implement authentication?**
-No. But you will need to implement consent for the AI feature — that's different from auth.
+Run all three checks before committing:
+
+```bash
+pnpm typecheck && pnpm lint && pnpm test:run
+```
+
+---
+
+## Other commands
+
+```bash
+pnpm build         # production build
+pnpm codegen       # regenerate src/lib/apollo/generated.ts from the live schema (commit the output)
+```
+
+---
+
+## Project structure
+
+```
+src/
+├── app/                     page-level composition and providers
+├── components/
+│   ├── ai/                  InsightsPanel, AiConsentPrompt, LowConfidenceBadge, PiiNotice, InsightsFeedback
+│   ├── employees/           EmployeeTable, EmployeeDetailPanel, search, filters, pagination
+│   ├── feedback/            ErrorFallback
+│   └── ui/                  shadcn primitives
+└── lib/
+    ├── ai/                  fetcher, consent, PII filter, Zod schemas
+    ├── apollo/              client, queries, generated types
+    ├── feature-flags/       flag context, provider, useFeatureFlag hook
+    ├── hooks/               useEmployees, useEmployeeInsights, useAiConsent, useDebouncedValue
+    ├── telemetry/           events, client (batched flush), session
+    └── utils.ts             cn helper
+```
+
+Tests are co-located with their source files. `src/test/` holds only shared infrastructure: Vitest setup, a render helper with all providers, and MSW handlers and fixtures.
