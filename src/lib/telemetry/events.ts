@@ -16,7 +16,8 @@ function makeEvent(
 
 export const events = {
   appSessionStarted: () => makeEvent('app.session.started'),
-  employeesSearchChanged: (query: string) => makeEvent('employees.search.changed', { query }),
+  employeesSearchChanged: (queryLength: number) =>
+    makeEvent('employees.search.changed', { queryLength }),
   employeesFilterChanged: (field: string, value: string) =>
     makeEvent('employees.filter.changed', { field, value }),
   employeesDetailOpened: (employeeId: string) =>

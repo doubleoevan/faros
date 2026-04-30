@@ -1,6 +1,7 @@
 import { Plus, X } from 'lucide-react'
 import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs'
 import { Button } from '@/components/ui/button'
+import { emit, events } from '@/lib/telemetry'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -32,6 +33,7 @@ export function EmployeeFilters({ className }: { className?: string }) {
     filters: string[],
     filterValue: string,
     isFiltered: boolean,
+    field: string,
   ) => {
     const updatedFilters = isFiltered
       ? [...filters, filterValue]
@@ -39,6 +41,7 @@ export function EmployeeFilters({ className }: { className?: string }) {
     await setFilters(updatedFilters)
     // any filter change reshapes the result set; the existing cursor trail no longer applies.
     await setCursors([])
+    emit(events.employeesFilterChanged(field, filterValue))
   }
 
   return (
@@ -48,12 +51,14 @@ export function EmployeeFilters({ className }: { className?: string }) {
         selectedTeams={teams}
         selectedStatuses={statuses}
         selectedAccountTypes={accountTypes}
-        onTeamFilterChange={(value, next) => handleFilterChange(setTeams, teams, value, next)}
+        onTeamFilterChange={(value, next) =>
+          handleFilterChange(setTeams, teams, value, next, 'team')
+        }
         onStatusFilterChange={(value, next) =>
-          handleFilterChange(setStatuses, statuses, value, next)
+          handleFilterChange(setStatuses, statuses, value, next, 'status')
         }
         onAccountFilterChange={(value, next) =>
-          handleFilterChange(setAccountTypes, accountTypes, value, next)
+          handleFilterChange(setAccountTypes, accountTypes, value, next, 'account')
         }
       />
       {teams.map((uid) => {
@@ -63,7 +68,7 @@ export function EmployeeFilters({ className }: { className?: string }) {
             key={`team-${uid}`}
             label="Team"
             value={team?.name ?? uid}
-            onRemove={() => handleFilterChange(setTeams, teams, uid, false)}
+            onRemove={() => handleFilterChange(setTeams, teams, uid, false, 'team')}
           />
         )
       })}
@@ -72,7 +77,7 @@ export function EmployeeFilters({ className }: { className?: string }) {
           key={`status-${status}`}
           label="Status"
           value={status}
-          onRemove={() => handleFilterChange(setStatuses, statuses, status, false)}
+          onRemove={() => handleFilterChange(setStatuses, statuses, status, false, 'status')}
         />
       ))}
       {accountTypes.map((type) => {
@@ -82,7 +87,9 @@ export function EmployeeFilters({ className }: { className?: string }) {
             key={`account-${type}`}
             label="Account"
             value={account?.source ?? type}
-            onRemove={() => handleFilterChange(setAccountTypes, accountTypes, type, false)}
+            onRemove={() =>
+              handleFilterChange(setAccountTypes, accountTypes, type, false, 'account')
+            }
           />
         )
       })}

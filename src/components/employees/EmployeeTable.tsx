@@ -14,6 +14,7 @@ import type { EmployeesQuery } from '@/lib/apollo/generated'
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue'
 import { useEmployees } from '@/lib/hooks/useEmployees'
 import { cn, compareNullableStrings, toInitials } from '@/lib/utils'
+import { emit, events } from '@/lib/telemetry'
 import { Button } from '@/components/ui/button'
 import { AccountIcons } from './AccountIcons'
 import { EmployeePagination } from './EmployeePagination'
@@ -281,6 +282,14 @@ function EmployeeTableRow({ employee }: { employee: EmployeeRow }) {
   const displayName = employee.name ?? 'Unnamed'
   const initials = toInitials(employee.name)
   const isSelected = viewId === employee.id
+
+  function handleViewEmployee() {
+    if (!isSelected) {
+      emit(events.employeesDetailOpened(employee.id))
+    }
+    void setViewId(employee.id)
+  }
+
   return (
     <TableRow data-state={isSelected ? 'selected' : undefined} className="group">
       <TableCell
@@ -323,7 +332,7 @@ function EmployeeTableRow({ employee }: { employee: EmployeeRow }) {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => void setViewId(employee.id)}
+          onClick={handleViewEmployee}
           aria-label={`View ${displayName}`}
           className={cn('font-normal', isSelected && 'border-sky-600')}
         >

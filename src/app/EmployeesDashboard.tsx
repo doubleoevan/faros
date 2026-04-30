@@ -5,6 +5,7 @@ import { EmployeeSearch } from '@/components/employees/EmployeeSearch'
 import { EmployeeTable } from '@/components/employees/EmployeeTable'
 import { EmployeeTableErrorFallback } from '@/components/employees/EmployeeTableErrorFallback'
 import { apolloClient } from '@/lib/apollo/client'
+import { emit, events } from '@/lib/telemetry'
 
 export function EmployeesDashboard() {
   return (
@@ -32,6 +33,14 @@ export function EmployeesDashboard() {
             FallbackComponent={EmployeeTableErrorFallback}
             onReset={() => {
               void apolloClient.resetStore()
+            }}
+            onError={(error) => {
+              emit(
+                events.errorBoundaryTriggered(
+                  'employee-table',
+                  error instanceof Error ? error.message : String(error),
+                ),
+              )
             }}
           >
             <EmployeeTable />

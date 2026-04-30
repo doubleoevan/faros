@@ -20,8 +20,17 @@ function flush(): void {
     return
   }
   const toSend = buffer.splice(0)
+  // keepalive ensures delivery even on page unload, replacing sendBeacon (see DEC-016)
+  // try/catch wraps JSON.stringify too — a synchronous throw escapes .catch()
   try {
-    navigator.sendBeacon(TELEMETRY_ENDPOINT, JSON.stringify(toSend))
+    fetch(TELEMETRY_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(toSend),
+      keepalive: true,
+    }).catch(() => {
+      // fire-and-forget — telemetry failures must never break the app
+    })
   } catch {
     // fire-and-forget — telemetry failures must never break the app
   }
