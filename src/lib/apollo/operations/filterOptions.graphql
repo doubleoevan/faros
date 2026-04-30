@@ -1,0 +1,13 @@
+query FilterOptions {
+  filterOptions {
+    teams {
+      uid
+      name
+    }
+    trackingStatuses
+    accountTypes {
+      type
+      source
+    }
+  }
+}

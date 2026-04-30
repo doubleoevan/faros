@@ -32,12 +32,27 @@ export function EmployeeTable({ className }: { className?: string }) {
   )
   const [search] = useQueryState('q', parseAsString)
   const debouncedSearch = useDebouncedValue(search ?? '', SEARCH_DEBOUNCE_MS)
+  const [teams] = useQueryState('team', parseAsArrayOf(parseAsString).withDefault([]))
+  const [statuses] = useQueryState('status', parseAsArrayOf(parseAsString).withDefault([]))
+  const [accountTypes] = useQueryState('account', parseAsArrayOf(parseAsString).withDefault([]))
   const currentCursor = cursors.length > 0 ? (cursors[cursors.length - 1] ?? null) : null
+
+  // Apollo dedupes identical variable shapes, so passing `undefined` keeps cache slots stable
+  // when a filter is unset rather than thrashing them with empty arrays.
+  const filter =
+    teams.length > 0 || statuses.length > 0 || accountTypes.length > 0
+      ? {
+          teams: teams.length > 0 ? teams : undefined,
+          trackingStatuses: statuses.length > 0 ? statuses : undefined,
+          accountTypes: accountTypes.length > 0 ? accountTypes : undefined,
+        }
+      : undefined
 
   const { data, loading, error } = useEmployees({
     first: EMPLOYEES_PAGE_SIZE,
     after: currentCursor,
     search: debouncedSearch || undefined,
+    filter,
   })
 
   const totalCount = data?.employees.totalCount ?? 0

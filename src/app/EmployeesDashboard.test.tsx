@@ -3,7 +3,7 @@ import { parseAsString, useQueryState } from 'nuqs'
 import { describe, expect, it } from 'vitest'
 import { render, screen, waitFor } from '@/test/render'
 import { server } from '@/test/mocks/server'
-import { employeesSearchHandler } from '@/test/mocks/handlers'
+import { employeesSearchHandler, filterOptionsHandler } from '@/test/mocks/handlers'
 import { employeeFixtures } from '@/test/mocks/fixtures'
 import { EmployeesDashboard } from './EmployeesDashboard'
 
@@ -72,6 +72,48 @@ describe('EmployeesDashboard', () => {
 
     expect(searchbox).toHaveValue('')
     expect(screen.queryByRole('button', { name: /clear search/i })).not.toBeInTheDocument()
+  })
+
+  it('applies a tracking-status filter and clears the cursor trail', async () => {
+    server.use(employeesSearchHandler(employeeFixtures), filterOptionsHandler(employeeFixtures))
+    const user = userEvent.setup()
+    window.history.replaceState(null, '', '/?cursor=stale_cursor')
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    render(<EmployeesDashboard />)
+
+    expect(await screen.findByText('Ada Lovelace')).toBeInTheDocument()
+    expect(screen.getByText('Grace Hopper')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^status/i }))
+    await user.click(await screen.findByRole('menuitemcheckbox', { name: 'Ignored' }))
+
+    await waitFor(() => {
+      expect(screen.queryByText('Ada Lovelace')).not.toBeInTheDocument()
+    })
+    expect(screen.getByText('Grace Hopper')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(window.location.search).not.toContain('cursor=')
+    })
+    await waitFor(() => {
+      expect(window.location.search).toContain('status=Ignored')
+    })
+  })
+
+  it('reset clears every active filter at once', async () => {
+    server.use(employeesSearchHandler(employeeFixtures), filterOptionsHandler(employeeFixtures))
+    const user = userEvent.setup()
+    window.history.replaceState(null, '', '/?status=Ignored&account=cal')
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    render(<EmployeesDashboard />)
+
+    const resetButton = await screen.findByRole('button', { name: /reset filters/i })
+    await user.click(resetButton)
+
+    await waitFor(() => {
+      expect(window.location.search).not.toContain('status=')
+    })
+    expect(window.location.search).not.toContain('account=')
+    expect(screen.queryByRole('button', { name: /reset filters/i })).not.toBeInTheDocument()
   })
 
   it('updates the search input when ?q= changes from outside the component', async () => {

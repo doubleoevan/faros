@@ -40,20 +40,18 @@ export const buttonVariants = cva(
 )
 
 /** Polymorphic button with variant and size axes. From shadcn/ui. */
-export function Button({
-  className,
-  variant = "default",
-  size = "default",
-  asChild = false,
-  ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
+export const Button = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentProps<"button"> &
+    VariantProps<typeof buttonVariants> & {
+      asChild?: boolean
+    }
+>(({ className, variant = "default", size = "default", asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot.Root : "button"
 
   return (
     <Comp
+      ref={ref}
       data-slot="button"
       data-variant={variant}
       data-size={size}
@@ -61,4 +59,5 @@ export function Button({
       {...props}
     />
   )
-}
+})
+Button.displayName = "Button"
