@@ -104,17 +104,16 @@ pnpm codegen       # regenerate src/lib/apollo/generated.ts from the live schema
 
 ```
 src/
-├── app/                     page-level composition and providers
+├── app/                     page-level composition, providers, and root error boundary
 ├── components/
-│   ├── ai/                  InsightsPanel, AiConsentPrompt, LowConfidenceBadge, PiiNotice, InsightsFeedback
-│   ├── employees/           EmployeeTable, EmployeeDetailPanel, search, filters, pagination
-│   ├── feedback/            ErrorFallback
+│   ├── ai/                  InsightsPanel, AiConsentPrompt, AiInsightsErrorFallback, InsightsPlaceholder, LowConfidenceBadge, PiiNotice, InsightsFeedback
+│   ├── employees/           EmployeeTable, EmployeeDetailPanel, EmployeeTableErrorFallback, search, filters, pagination
 │   └── ui/                  shadcn primitives
 └── lib/
     ├── ai/                  fetcher, consent, PII filter, Zod schemas
     ├── apollo/              client, queries, generated types
     ├── feature-flags/       flag context, provider, useFeatureFlag hook
-    ├── hooks/               useEmployees, useEmployeeInsights, useAiConsent, useDebouncedValue
+    ├── hooks/               useEmployees, useEmployeeInsights, useAiConsent, useFilterOptions, useDebouncedValue
     ├── telemetry/           events, client (batched flush), session
     └── utils.ts             cn helper
 ```
