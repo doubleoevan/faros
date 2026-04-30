@@ -1,0 +1,54 @@
+import { getSessionId } from '@/lib/telemetry'
+import { aiConsentResponseSchema } from './schemas'
+
+const graphqlUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/graphql'
+const AI_BASE_URL = new URL(graphqlUrl).origin
+
+type CachedToken = {
+  token: string
+  expiresAt: Date
+}
+
+let cachedToken: CachedToken | null = null
+
+// re-fetch 5 minutes before the server-issued expiry to prevent edge-case failures
+const EXPIRY_BUFFER_MS = 5 * 60 * 1000
+
+function isTokenFresh(cached: CachedToken): boolean {
+  return cached.expiresAt.getTime() - Date.now() > EXPIRY_BUFFER_MS
+}
+
+/** Fetches and caches a consent token; returns the cached token if it is still valid. */
+export async function getAiConsentToken(): Promise<string> {
+  if (cachedToken !== null && isTokenFresh(cachedToken)) {
+    return cachedToken.token
+  }
+
+  const response = await fetch(`${AI_BASE_URL}/api/ai/consent`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: getSessionId(), scope: 'insights' }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Consent request failed with status ${response.status}`)
+  }
+
+  const data: unknown = await response.json()
+  const result = aiConsentResponseSchema.safeParse(data)
+  if (!result.success) {
+    throw new Error(`Consent response validation failed: ${result.error.message}`)
+  }
+
+  cachedToken = {
+    token: result.data.consentToken,
+    expiresAt: new Date(result.data.expiresAt),
+  }
+
+  return cachedToken.token
+}
+
+/** Clears the in-memory consent token, triggering a fresh fetch on the next call. */
+export function clearAiConsentToken(): void {
+  cachedToken = null
+}
