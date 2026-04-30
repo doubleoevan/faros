@@ -5,7 +5,7 @@ const AI_BASE_URL = new URL(graphqlUrl).origin
 const TIMEOUT_MS = 10_000
 const RETRY_DELAY_MS = 1_000
 
-export type InsightsErrorKind =
+export type InsightsErrorType =
   | 'timeout'
   | 'rate_limited'
   | 'unauthorized'
@@ -14,20 +14,20 @@ export type InsightsErrorKind =
   | 'network'
   | 'validation'
 
-/** Structured error thrown by fetchInsights; inspect `.kind` for telemetry routing. */
+/** Structured error thrown by fetchInsights; inspect `.type` for telemetry routing. */
 export class InsightsFetchError extends Error {
-  readonly kind: InsightsErrorKind
+  readonly type: InsightsErrorType
   readonly retryAfterSeconds?: number
   readonly status?: number
 
   constructor(
     message: string,
-    kind: InsightsErrorKind,
+    type: InsightsErrorType,
     extras?: { retryAfterSeconds?: number; status?: number },
   ) {
     super(message)
     this.name = 'InsightsFetchError'
-    this.kind = kind
+    this.type = type
     this.retryAfterSeconds = extras?.retryAfterSeconds
     this.status = extras?.status
   }

@@ -12,6 +12,7 @@ import { useFeatureFlag } from '@/lib/feature-flags'
 import { useAiConsent } from '@/lib/hooks/useAiConsent'
 import { emit, events } from '@/lib/telemetry'
 import { AiConsentPrompt } from '@/components/ai/AiConsentPrompt'
+import { InsightsPanel } from '@/components/ai/InsightsPanel'
 import { AccountIcons } from './AccountIcons'
 import { EmployeeStatusBadge } from './EmployeeStatusBadge'
 
@@ -130,15 +131,16 @@ function AiInsightsSection({ employee }: { employee: Employee }) {
 }
 
 function AiConsentGate({ employee }: { employee: Employee }) {
-  const { consentStatus, handleConsentGrant, handleConsentDeny } = useAiConsent()
+  const { consentStatus, handleGrantConsent, handleDenyConsent, handleResetConsent } =
+    useAiConsent()
   const isLoading = consentStatus === 'requesting'
 
   if (consentStatus === 'idle' || consentStatus === 'requesting') {
     return (
       <AiConsentPrompt
         isLoading={isLoading}
-        onConsentGrant={handleConsentGrant}
-        onConsentDeny={handleConsentDeny}
+        onConsentGrant={handleGrantConsent}
+        onConsentDeny={handleDenyConsent}
         className="mx-4"
       />
     )
@@ -164,26 +166,14 @@ function AiConsentGate({ employee }: { employee: Employee }) {
         className="border-destructive/40 bg-destructive/5 mx-4 flex flex-col gap-3 rounded-md border border-dashed p-4 text-sm"
       >
         <p className="text-muted-foreground">Could not authorize AI insights.</p>
-        <Button size="sm" variant="outline" onClick={handleConsentGrant}>
+        <Button size="sm" variant="outline" onClick={handleGrantConsent}>
           Try again
         </Button>
       </section>
     )
   }
 
-  // granted — Task 13 replaces this placeholder with <InsightsPanel>
-  return (
-    <section
-      aria-label="AI insights"
-      data-testid="ai-insights-granted"
-      className="border-muted-foreground/30 bg-muted/40 mx-4 rounded-md border border-dashed p-4 text-sm"
-    >
-      <h3 className="text-foreground font-medium">AI Activity Insights</h3>
-      <p className="text-muted-foreground mt-1">
-        Loading insights for {employee.name ?? 'this employee'}…
-      </p>
-    </section>
-  )
+  return <InsightsPanel employeeId={employee.id} onAuthExpired={handleResetConsent} />
 }
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {

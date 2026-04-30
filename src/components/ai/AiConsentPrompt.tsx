@@ -17,7 +17,7 @@ export function AiConsentPrompt({
   className,
 }: AiConsentPromptProps) {
   return (
-    <section aria-label="AI insights consent" className={cn('flex flex-col gap-4 p-4', className)}>
+    <section aria-label="AI insights consent" className={cn('flex flex-col gap-4', className)}>
       <div className="flex items-center gap-2">
         <Sparkles className="text-primary size-4 shrink-0" />
         <h3 className="text-sm font-semibold">AI Activity Insights</h3>

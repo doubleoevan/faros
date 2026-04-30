@@ -78,7 +78,7 @@ describe('fetchInsights', () => {
       fetchPromise.catch(() => {})
       await vi.advanceTimersByTimeAsync(1_001)
 
-      await expect(fetchPromise).rejects.toMatchObject({ kind: 'server_error', status: 503 })
+      await expect(fetchPromise).rejects.toMatchObject({ type: 'server_error', status: 503 })
     })
   })
 
@@ -95,7 +95,7 @@ describe('fetchInsights', () => {
     )
 
     await expect(fetchInsights('emp_01', 'no-token')).rejects.toMatchObject({
-      kind: 'unauthorized',
+      type: 'unauthorized',
     })
     expect(requestCount).toBe(1)
   })
@@ -111,7 +111,7 @@ describe('fetchInsights', () => {
     )
 
     await expect(fetchInsights('emp_01', 'expired-token')).rejects.toMatchObject({
-      kind: 'unauthorized',
+      type: 'unauthorized',
     })
   })
 
@@ -126,7 +126,7 @@ describe('fetchInsights', () => {
     )
 
     await expect(fetchInsights('does-not-exist', 'valid-token')).rejects.toMatchObject({
-      kind: 'not_found',
+      type: 'not_found',
     })
   })
 
@@ -141,7 +141,7 @@ describe('fetchInsights', () => {
     )
 
     await expect(fetchInsights('emp_01', 'valid-token')).rejects.toMatchObject({
-      kind: 'rate_limited',
+      type: 'rate_limited',
       retryAfterSeconds: 32,
     })
   })
@@ -152,7 +152,7 @@ describe('fetchInsights', () => {
     )
 
     await expect(fetchInsights('emp_01', 'valid-token')).rejects.toMatchObject({
-      kind: 'rate_limited',
+      type: 'rate_limited',
       retryAfterSeconds: 60,
     })
   })
@@ -172,14 +172,14 @@ describe('fetchInsights', () => {
     fetchPromise.catch(() => {})
     await vi.advanceTimersByTimeAsync(10_001)
 
-    await expect(fetchPromise).rejects.toMatchObject({ kind: 'timeout' })
+    await expect(fetchPromise).rejects.toMatchObject({ type: 'timeout' })
   })
 
   it('throws network when fetch itself rejects', async () => {
     server.use(http.get(INSIGHTS_URL, () => HttpResponse.error()))
 
     await expect(fetchInsights('emp_01', 'valid-token')).rejects.toMatchObject({
-      kind: 'network',
+      type: 'network',
     })
   })
 
@@ -187,7 +187,7 @@ describe('fetchInsights', () => {
     server.use(http.get(INSIGHTS_URL, () => HttpResponse.json({ malformed: true })))
 
     await expect(fetchInsights('emp_01', 'valid-token')).rejects.toMatchObject({
-      kind: 'validation',
+      type: 'validation',
     })
   })
 

@@ -4,6 +4,7 @@ import { renderHook, act } from '@testing-library/react'
 vi.mock('@/lib/ai', () => ({
   hasValidAiConsentToken: vi.fn(() => false),
   getAiConsentToken: vi.fn(() => Promise.resolve('test-token')),
+  clearAiConsentToken: vi.fn(),
 }))
 
 vi.mock('@/lib/telemetry', () => ({
@@ -15,7 +16,7 @@ vi.mock('@/lib/telemetry', () => ({
   },
 }))
 
-import { hasValidAiConsentToken, getAiConsentToken } from '@/lib/ai'
+import { hasValidAiConsentToken, getAiConsentToken, clearAiConsentToken } from '@/lib/ai'
 import { emit } from '@/lib/telemetry'
 import { useAiConsent } from './useAiConsent'
 
@@ -60,10 +61,10 @@ describe('useAiConsent', () => {
     expect(requestedCalls).toHaveLength(1)
   })
 
-  it('transitions to granted and emits aiConsentGranted on handleConsentGrant', async () => {
+  it('transitions to granted and emits aiConsentGranted on handleGrantConsent', async () => {
     const { result } = renderHook(() => useAiConsent())
 
-    await act(() => result.current.handleConsentGrant())
+    await act(() => result.current.handleGrantConsent())
 
     expect(result.current.consentStatus).toBe('granted')
     expect(vi.mocked(emit).mock.calls.some((call) => call[0].name === 'ai.consent.granted')).toBe(
@@ -82,7 +83,7 @@ describe('useAiConsent', () => {
     const { result } = renderHook(() => useAiConsent())
 
     act(() => {
-      void result.current.handleConsentGrant()
+      void result.current.handleGrantConsent()
     })
     expect(result.current.consentStatus).toBe('requesting')
 
@@ -96,19 +97,31 @@ describe('useAiConsent', () => {
     vi.mocked(getAiConsentToken).mockRejectedValue(new Error('network error'))
 
     const { result } = renderHook(() => useAiConsent())
-    await act(() => result.current.handleConsentGrant())
+    await act(() => result.current.handleGrantConsent())
 
     expect(result.current.consentStatus).toBe('error')
   })
 
-  it('transitions to denied and emits aiConsentDenied on handleConsentDeny', () => {
+  it('transitions to denied and emits aiConsentDenied on handleDenyConsent', () => {
     const { result } = renderHook(() => useAiConsent())
 
-    act(() => result.current.handleConsentDeny())
+    act(() => result.current.handleDenyConsent())
 
     expect(result.current.consentStatus).toBe('denied')
     expect(vi.mocked(emit).mock.calls.some((call) => call[0].name === 'ai.consent.denied')).toBe(
       true,
     )
+  })
+
+  it('resets to idle and clears the token cache on handleResetConsent', () => {
+    vi.mocked(hasValidAiConsentToken).mockReturnValue(true)
+    const { result } = renderHook(() => useAiConsent())
+
+    expect(result.current.consentStatus).toBe('granted')
+
+    act(() => result.current.handleResetConsent())
+
+    expect(result.current.consentStatus).toBe('idle')
+    expect(clearAiConsentToken).toHaveBeenCalledTimes(1)
   })
 })

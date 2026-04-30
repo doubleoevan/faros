@@ -11,17 +11,17 @@ describe('AiConsentPrompt', () => {
   })
 
   it('calls onConsentGrant when Allow is clicked', () => {
-    const handleConsentGrant = vi.fn(() => Promise.resolve())
-    render(<AiConsentPrompt onConsentGrant={handleConsentGrant} onConsentDeny={vi.fn()} />)
+    const handleGrantConsent = vi.fn(() => Promise.resolve())
+    render(<AiConsentPrompt onConsentGrant={handleGrantConsent} onConsentDeny={vi.fn()} />)
     fireEvent.click(screen.getByRole('button', { name: 'Allow' }))
-    expect(handleConsentGrant).toHaveBeenCalledTimes(1)
+    expect(handleGrantConsent).toHaveBeenCalledTimes(1)
   })
 
   it('calls onConsentDeny when No thanks is clicked', () => {
-    const handleConsentDeny = vi.fn()
-    render(<AiConsentPrompt onConsentGrant={vi.fn()} onConsentDeny={handleConsentDeny} />)
+    const handleDenyConsent = vi.fn()
+    render(<AiConsentPrompt onConsentGrant={vi.fn()} onConsentDeny={handleDenyConsent} />)
     fireEvent.click(screen.getByRole('button', { name: 'No thanks' }))
-    expect(handleConsentDeny).toHaveBeenCalledTimes(1)
+    expect(handleDenyConsent).toHaveBeenCalledTimes(1)
   })
 
   it('disables both buttons and changes Allow label when isLoading is true', () => {
