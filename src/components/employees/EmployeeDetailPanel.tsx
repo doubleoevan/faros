@@ -1,82 +1,96 @@
-import { gql, useApolloClient } from '@apollo/client'
+import { X } from 'lucide-react'
+import { useQuery } from '@apollo/client'
+import { useEffect } from 'react'
 import { parseAsString, useQueryState } from 'nuqs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
-import type { EmployeesQuery } from '@/lib/apollo/generated'
-import { toInitials } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import type { EmployeeQuery } from '@/lib/apollo/generated'
+import { EmployeeDocument } from '@/lib/apollo/generated'
+import { cn, toInitials } from '@/lib/utils'
 import { AccountIcons } from './AccountIcons'
 import { EmployeeStatusBadge } from './EmployeeStatusBadge'
 
-type EmployeeRow = EmployeesQuery['employees']['edges'][number]['node']
+type Employee = NonNullable<EmployeeQuery['employee']>
 
 export function EmployeeDetailPanel() {
-  const client = useApolloClient()
   const [viewId, setViewId] = useQueryState('view', parseAsString)
 
-  // read straight from the normalized cache — avoids a refetch on open. the Employees list
-  // query already populated `Employee:<id>` with every field we render below.
-  const employee = viewId
-    ? client.cache.readFragment<EmployeeRow>({
-        id: client.cache.identify({ __typename: 'Employee', id: viewId }),
-        fragment: EMPLOYEE_DETAIL_FRAGMENT,
-      })
-    : null
+  // cache-first: returns immediately from the normalized cache when the employee was already
+  // fetched by the list query (normal click flow). falls back to a network request on hard
+  // refresh when the cache is empty — the Query.employee field policy in apollo/client.ts
+  // ensures the cache lookup finds the normalized entity without an extra round-trip.
+  const { data, loading } = useQuery(EmployeeDocument, {
+    variables: { id: viewId ?? '' },
+    skip: !viewId,
+    fetchPolicy: 'cache-first',
+  })
 
+  const employee = data?.employee ?? null
   const isOpen = Boolean(viewId)
-  const handleOpenChange = (next: boolean) => {
-    if (!next) {
+  const handleClose = () => void setViewId(null)
+
+  // close if the query resolves with no employee (id not found in the API).
+  useEffect(() => {
+    if (viewId && !loading && !employee) {
       void setViewId(null)
     }
-  }
+  }, [employee, loading, setViewId, viewId])
 
   return (
-    <Sheet open={isOpen} onOpenChange={handleOpenChange}>
-      <SheetContent side="right" className="sm:max-w-md">
-        {employee ? (
-          <EmployeeDetailContents employee={employee} />
-        ) : (
-          <SheetHeader>
-            <SheetTitle>Employee not available</SheetTitle>
-            <SheetDescription>
-              This employee is no longer in the loaded page. Close this panel and reopen from the
-              table.
-            </SheetDescription>
-          </SheetHeader>
-        )}
-      </SheetContent>
-    </Sheet>
+    // width transition pushes the table content left as the panel opens — matches Figma layout.
+    <aside
+      aria-label="Employee details"
+      className={cn(
+        'shrink-0 overflow-hidden border-l transition-[width] duration-300',
+        isOpen ? 'w-96' : 'w-0',
+      )}
+    >
+      <div className="flex h-full w-96 flex-col overflow-y-auto">
+        {loading && <EmployeeDetailPlaceholder />}
+        {employee && <EmployeeDetailContents employee={employee} onClose={handleClose} />}
+      </div>
+    </aside>
   )
 }
 
-function EmployeeDetailContents({ employee }: { employee: EmployeeRow }) {
+function EmployeeDetailContents({
+  employee,
+  onClose,
+}: {
+  employee: Employee
+  onClose: () => void
+}) {
   const displayName = employee.name ?? 'Unnamed'
   const teamLabel = employee.teams.map((team) => team.name).join(', ') || '—'
   return (
     <>
-      <SheetHeader className="border-b">
+      <div className="flex items-start justify-between border-b p-4">
         <div className="flex items-center gap-3">
           <Avatar size="lg">
             {employee.photoUrl && <AvatarImage src={employee.photoUrl} alt={displayName} />}
             <AvatarFallback>{toInitials(employee.name)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col gap-1">
-            <SheetTitle className="text-lg">{displayName}</SheetTitle>
-            <EmployeeStatusBadge status={employee.trackingStatus} className="self-start" />
+            <h2 className="text-lg font-semibold">{displayName}</h2>
+            <EmployeeStatusBadge
+              status={employee.trackingStatus}
+              category={employee.trackingCategory}
+              className="self-start"
+            />
           </div>
         </div>
-        {/* sr-only — Radix Dialog requires a Description for screen readers; the visual
-            design doesn't show one, so we hide it from sighted users. */}
-        <SheetDescription className="sr-only">
-          Profile details and AI insights for {displayName}.
-        </SheetDescription>
-      </SheetHeader>
-      <div className="flex flex-col gap-4 px-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          aria-label="Close panel"
+          className="shrink-0"
+        >
+          <X className="size-4" />
+        </Button>
+      </div>
+      <div className="flex flex-col gap-4 p-4">
         <DetailRow label="UID" value={employee.uid} />
         <DetailRow label="Teams" value={teamLabel} />
         <DetailRow
@@ -108,24 +122,23 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
   )
 }
 
-// fragment whose selection set matches the Employees list query exactly, so the cache lookup
-// is guaranteed to hit on a row we just rendered.
-const EMPLOYEE_DETAIL_FRAGMENT = gql`
-  fragment EmployeeDetailFields on Employee {
-    id
-    uid
-    name
-    photoUrl
-    trackingStatus
-    teams {
-      id
-      uid
-      name
-    }
-    accounts {
-      type
-      source
-      uid
-    }
-  }
-`
+function EmployeeDetailPlaceholder() {
+  return (
+    <>
+      <div className="flex items-start justify-between border-b p-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="size-10 rounded-full" />
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-5 w-36" />
+            <Skeleton className="h-5 w-20 rounded-full" />
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col gap-4 p-4">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-4 w-28" />
+      </div>
+    </>
+  )
+}

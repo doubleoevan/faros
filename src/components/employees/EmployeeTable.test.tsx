@@ -16,10 +16,10 @@ describe('EmployeeTable', () => {
   it('renders skeleton rows while loading then employees from the response', async () => {
     render(<EmployeeTable />)
     expect(screen.getAllByTestId('employee-table-skeleton-row').length).toBeGreaterThan(0)
-    expect(await screen.findByText('Ada Lovelace')).toBeInTheDocument()
-    expect(screen.getByText('Grace Hopper')).toBeInTheDocument()
+    expect(await screen.findByText('Lando Calrissian')).toBeInTheDocument()
+    expect(screen.getByText('Boba Fett')).toBeInTheDocument()
     expect(screen.getByText('Unnamed')).toBeInTheDocument()
-    expect(screen.getByText('Platform')).toBeInTheDocument()
+    expect(screen.getByText('platform')).toBeInTheDocument()
     expect(screen.getByAltText('GitHub')).toBeInTheDocument()
     expect(screen.queryAllByTestId('employee-table-skeleton-row').length).toBe(0)
   })
@@ -44,7 +44,7 @@ describe('EmployeeTable sorting', () => {
     const user = userEvent.setup()
     render(<EmployeeTable />)
 
-    await screen.findByText('Ada Lovelace')
+    await screen.findByText('Lando Calrissian')
     const nameHeader = screen.getByRole('button', { name: 'Name' })
 
     await user.click(nameHeader)
@@ -53,16 +53,16 @@ describe('EmployeeTable sorting', () => {
       expect(window.location.search).not.toContain('sort=-')
     })
     let rows = screen.getAllByRole('row').slice(1)
-    expect(rows[0]).toHaveTextContent('Ada Lovelace')
-    expect(rows[1]).toHaveTextContent('Grace Hopper')
+    expect(rows[0]).toHaveTextContent('Boba Fett')
+    expect(rows[1]).toHaveTextContent('Lando Calrissian')
 
     await user.click(nameHeader)
     await waitFor(() => {
       expect(window.location.search).toContain('sort=-name')
     })
     rows = screen.getAllByRole('row').slice(1)
-    expect(rows[0]).toHaveTextContent('Grace Hopper')
-    expect(rows[1]).toHaveTextContent('Ada Lovelace')
+    expect(rows[0]).toHaveTextContent('Lando Calrissian')
+    expect(rows[1]).toHaveTextContent('Boba Fett')
 
     await user.click(nameHeader)
     await waitFor(() => {
@@ -80,7 +80,8 @@ describe('EmployeeTable pagination', () => {
     expect(await screen.findByText('Employee 1')).toBeInTheDocument()
     expect(screen.getByText(`Employee ${EMPLOYEES_PAGE_SIZE}`)).toBeInTheDocument()
     expect(screen.queryByText(`Employee ${EMPLOYEES_PAGE_SIZE + 1}`)).not.toBeInTheDocument()
-    expect(screen.getByText(`1-${EMPLOYEES_PAGE_SIZE} of ${TOTAL_FIXTURES}`)).toBeInTheDocument()
+    expect(screen.getByText(`1-${EMPLOYEES_PAGE_SIZE}`)).toBeInTheDocument()
+    expect(screen.getByText(`of ${TOTAL_FIXTURES}`)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /previous page/i })).toBeDisabled()
     expect(screen.getByRole('button', { name: /next page/i })).toBeEnabled()
 
@@ -89,13 +90,13 @@ describe('EmployeeTable pagination', () => {
     expect(screen.getByText(`Employee ${TOTAL_FIXTURES}`)).toBeInTheDocument()
     expect(screen.queryByText('Employee 1')).not.toBeInTheDocument()
     expect(
-      await screen.findByText(`${EMPLOYEES_PAGE_SIZE + 1}-${TOTAL_FIXTURES} of ${TOTAL_FIXTURES}`),
+      await screen.findByText(`${EMPLOYEES_PAGE_SIZE + 1}-${TOTAL_FIXTURES}`),
     ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /previous page/i })).toBeEnabled()
 
     await user.click(screen.getByRole('button', { name: /previous page/i }))
     expect(await screen.findByText('Employee 1')).toBeInTheDocument()
-    expect(screen.getByText(`1-${EMPLOYEES_PAGE_SIZE} of ${TOTAL_FIXTURES}`)).toBeInTheDocument()
+    expect(screen.getByText(`1-${EMPLOYEES_PAGE_SIZE}`)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /previous page/i })).toBeDisabled()
   })
 
@@ -116,7 +117,11 @@ describe('EmployeeTable pagination', () => {
   it('restores both arrows on refresh by reading the trail from the URL', async () => {
     server.use(employeesPagedHandler(paginationFixtures, { pageSize: EMPLOYEES_PAGE_SIZE }))
     // simulate a refreshed mid-pagination URL where the trail came along for the ride.
-    window.history.replaceState(null, '', `/?cursor=${String(EMPLOYEES_PAGE_SIZE - 1)}`)
+    window.history.replaceState(
+      null,
+      '',
+      `/?cursor=${encodeURIComponent(btoa(`cursor:${EMPLOYEES_PAGE_SIZE - 1}`))}`,
+    )
     const user = userEvent.setup()
     render(<EmployeeTable />)
 

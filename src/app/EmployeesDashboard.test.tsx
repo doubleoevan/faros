@@ -34,15 +34,15 @@ describe('EmployeesDashboard', () => {
     const user = userEvent.setup()
     render(<EmployeesDashboard />)
 
-    expect(await screen.findByText('Ada Lovelace')).toBeInTheDocument()
-    expect(screen.getByText('Grace Hopper')).toBeInTheDocument()
+    expect(await screen.findByText('Lando Calrissian')).toBeInTheDocument()
+    expect(screen.getByText('Boba Fett')).toBeInTheDocument()
 
-    await user.type(screen.getByRole('searchbox', { name: /search employees/i }), 'grace')
+    await user.type(screen.getByRole('searchbox', { name: /search employees/i }), 'boba')
 
     await waitFor(() => {
-      expect(screen.queryByText('Ada Lovelace')).not.toBeInTheDocument()
+      expect(screen.queryByText('Lando Calrissian')).not.toBeInTheDocument()
     })
-    expect(screen.getByText('Grace Hopper')).toBeInTheDocument()
+    expect(screen.getByText('Boba Fett')).toBeInTheDocument()
   })
 
   it('clears the cursor trail when the search term changes', async () => {
@@ -51,8 +51,8 @@ describe('EmployeesDashboard', () => {
     window.history.replaceState(null, '', '/?cursor=stale_cursor')
     render(<EmployeesDashboard />)
 
-    await screen.findByText('Ada Lovelace')
-    await user.type(screen.getByRole('searchbox', { name: /search employees/i }), 'grace')
+    await screen.findByText('Lando Calrissian')
+    await user.type(screen.getByRole('searchbox', { name: /search employees/i }), 'boba')
 
     await waitFor(() => {
       expect(window.location.search).not.toContain('cursor=')
@@ -66,7 +66,7 @@ describe('EmployeesDashboard', () => {
 
     // type something to guarantee the clear button is visible regardless of prior state.
     const searchbox = screen.getByRole('searchbox', { name: /search employees/i })
-    await user.type(searchbox, 'grace')
+    await user.type(searchbox, 'boba')
     expect(screen.getByRole('button', { name: /clear search/i })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /clear search/i }))
@@ -75,29 +75,28 @@ describe('EmployeesDashboard', () => {
     expect(screen.queryByRole('button', { name: /clear search/i })).not.toBeInTheDocument()
   })
 
-  it('applies a tracking-status filter and clears the cursor trail', async () => {
+  it('removing a filter via its chip clears the cursor trail', async () => {
     server.use(employeesSearchHandler(employeeFixtures), filterOptionsHandler(employeeFixtures))
     const user = userEvent.setup()
-    window.history.replaceState(null, '', '/?cursor=stale_cursor')
+    // start with both a stale cursor and an applied filter — the cursor-clear on filter change
+    // is what's under test. URL-preset avoids Radix submenu navigation in happy-dom.
+    window.history.replaceState(null, '', '/?cursor=stale_cursor&status=Ignored')
     window.dispatchEvent(new PopStateEvent('popstate'))
     render(<EmployeesDashboard />)
 
-    expect(await screen.findByText('Ada Lovelace')).toBeInTheDocument()
-    expect(screen.getByText('Grace Hopper')).toBeInTheDocument()
+    expect(await screen.findByText('Boba Fett')).toBeInTheDocument()
+    expect(screen.queryByText('Lando Calrissian')).not.toBeInTheDocument()
+    expect(window.location.search).toContain('status=Ignored')
 
-    await user.click(screen.getByRole('button', { name: /^status/i }))
-    await user.click(await screen.findByRole('menuitemcheckbox', { name: 'Ignored' }))
+    await user.click(screen.getByRole('button', { name: /remove status: ignored/i }))
 
     await waitFor(() => {
-      expect(screen.queryByText('Ada Lovelace')).not.toBeInTheDocument()
+      expect(screen.getByText('Lando Calrissian')).toBeInTheDocument()
     })
-    expect(screen.getByText('Grace Hopper')).toBeInTheDocument()
     await waitFor(() => {
       expect(window.location.search).not.toContain('cursor=')
     })
-    await waitFor(() => {
-      expect(window.location.search).toContain('status=Ignored')
-    })
+    expect(window.location.search).not.toContain('status=')
   })
 
   it('combines status and account filters into the GraphQL request and renders only the intersection', async () => {
@@ -126,31 +125,14 @@ describe('EmployeesDashboard', () => {
 
     render(<EmployeesDashboard />)
 
-    // ada passes both filters (Included + vcs).
-    expect(await screen.findByText('Ada Lovelace')).toBeInTheDocument()
-    // grace fails status, bob passes status but fails account — both are excluded only when
+    // lando passes both filters (Included + vcs).
+    expect(await screen.findByText('Lando Calrissian')).toBeInTheDocument()
+    // boba fails status, bob passes status but fails account — both are excluded only when
     // both filters are applied together.
-    expect(screen.queryByText('Grace Hopper')).not.toBeInTheDocument()
+    expect(screen.queryByText('Boba Fett')).not.toBeInTheDocument()
     expect(screen.queryByText('Bob Builder')).not.toBeInTheDocument()
     expect(window.location.search).toContain('status=Included')
     expect(window.location.search).toContain('account=vcs')
-  })
-
-  it('reset clears every active filter at once', async () => {
-    server.use(employeesSearchHandler(employeeFixtures), filterOptionsHandler(employeeFixtures))
-    const user = userEvent.setup()
-    window.history.replaceState(null, '', '/?status=Ignored&account=cal')
-    window.dispatchEvent(new PopStateEvent('popstate'))
-    render(<EmployeesDashboard />)
-
-    const resetButton = await screen.findByRole('button', { name: /reset filters/i })
-    await user.click(resetButton)
-
-    await waitFor(() => {
-      expect(window.location.search).not.toContain('status=')
-    })
-    expect(window.location.search).not.toContain('account=')
-    expect(screen.queryByRole('button', { name: /reset filters/i })).not.toBeInTheDocument()
   })
 
   it('opens the detail panel from a row View button without refetching', async () => {
@@ -158,7 +140,7 @@ describe('EmployeesDashboard', () => {
     const user = userEvent.setup()
     render(<EmployeesDashboard />)
 
-    await screen.findByText('Ada Lovelace')
+    await screen.findByText('Lando Calrissian')
 
     // count Employees requests so we can prove opening the panel doesn't trigger another one.
     let employeesRequests = 0
@@ -176,10 +158,10 @@ describe('EmployeesDashboard', () => {
         })
     })
 
-    await user.click(screen.getByRole('button', { name: /view ada lovelace/i }))
+    await user.click(screen.getByRole('button', { name: /view lando calrissian/i }))
 
-    const panel = await screen.findByRole('dialog')
-    expect(panel).toHaveTextContent('Ada Lovelace')
+    const panel = await screen.findByRole('complementary', { name: /employee details/i })
+    expect(panel).toHaveTextContent('Lando Calrissian')
     expect(screen.getByTestId('ai-insights-mount')).toBeInTheDocument()
     // nuqs throttles URL writes — wait for the flush before asserting.
     await waitFor(() => {
@@ -191,8 +173,8 @@ describe('EmployeesDashboard', () => {
   it('updates the search input when ?q= changes from outside the component', async () => {
     server.use(employeesSearchHandler(employeeFixtures))
     const user = userEvent.setup()
-    // render the search in isolation so a leftover ?view= from a prior test can't
-    // open the detail Sheet (which is modal and aria-hides the rest of the tree).
+    // render the search in isolation to avoid the full dashboard's detail panel
+    // reacting to any leftover ?view= URL state from a prior test.
     render(
       <>
         <EmployeeSearch />

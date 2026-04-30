@@ -26,14 +26,16 @@ export function SortableTableHead({
   const ariaSort = direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : 'none'
 
   return (
-    <TableHead className={className} aria-sort={ariaSort}>
+    // relative + absolute button so the entire cell area is the click target, not just the
+    // text+icon. button covers TableHead's padding too — clicking anywhere in the cell sorts.
+    <TableHead className={cn('relative', className)} aria-sort={ariaSort}>
       <button
         type="button"
         onClick={onTableSort}
-        className="hover:text-foreground inline-flex cursor-pointer items-center gap-1 transition-colors"
+        className="hover:text-foreground absolute inset-0 flex cursor-pointer items-center gap-1 px-2 text-left transition-colors"
       >
         {children}
-        <Icon className={cn('size-3', direction === null && 'opacity-40')} />
+        <Icon className={cn('size-3', direction === null ? 'opacity-40' : 'text-sky-600')} />
       </button>
     </TableHead>
   )

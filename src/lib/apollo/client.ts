@@ -11,6 +11,15 @@ export const apolloClient = new ApolloClient({
       Team: { keyFields: ['id'] },
       // Account.uid echoes the employee's uid; normalizing collapses accounts. keep inline.
       Account: { keyFields: false },
+      Query: {
+        fields: {
+          // redirect employee(id) to the normalized entity already written by the list query,
+          // so cache-first returns immediately without a network round-trip.
+          employee(_, { args, toReference }) {
+            return toReference({ __typename: 'Employee', id: args?.['id'] as string })
+          },
+        },
+      },
     },
   }),
   defaultOptions: {

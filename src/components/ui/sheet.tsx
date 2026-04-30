@@ -30,22 +30,23 @@ export function SheetPortal({
   return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
 }
 
-/** Backdrop overlay shown behind Sheet content. From shadcn/ui. */
-export function SheetOverlay({
-  className,
-  ...props
-}: React.ComponentProps<typeof SheetPrimitive.Overlay>) {
-  return (
-    <SheetPrimitive.Overlay
-      data-slot="sheet-overlay"
-      className={cn(
-        "fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
-        className
-      )}
-      {...props}
-    />
-  )
-}
+/** Backdrop overlay shown behind Sheet content. From shadcn/ui.
+ *  forwardRef'd so Radix's Portal+Slot internals can attach a ref without warning. */
+export const SheetOverlay = React.forwardRef<
+  React.ElementRef<typeof SheetPrimitive.Overlay>,
+  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>
+>(({ className, ...props }, ref) => (
+  <SheetPrimitive.Overlay
+    ref={ref}
+    data-slot="sheet-overlay"
+    className={cn(
+      "fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
+      className
+    )}
+    {...props}
+  />
+))
+SheetOverlay.displayName = "SheetOverlay"
 
 /** Animated Sheet content panel that slides in from the chosen side. From shadcn/ui. */
 export function SheetContent({

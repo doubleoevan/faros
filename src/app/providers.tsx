@@ -4,6 +4,7 @@ import { ErrorBoundary } from 'react-error-boundary'
 import { NuqsAdapter } from 'nuqs/adapters/react'
 import { apolloClient } from '@/lib/apollo/client'
 import { ErrorFallback } from '@/components/feedback/ErrorFallback'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { FeatureFlagsProvider } from '@/lib/feature-flags/provider'
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -11,7 +12,9 @@ export function Providers({ children }: { children: ReactNode }) {
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <ApolloProvider client={apolloClient}>
         <NuqsAdapter>
-          <FeatureFlagsProvider>{children}</FeatureFlagsProvider>
+          <FeatureFlagsProvider>
+            <TooltipProvider>{children}</TooltipProvider>
+          </FeatureFlagsProvider>
         </NuqsAdapter>
       </ApolloProvider>
     </ErrorBoundary>

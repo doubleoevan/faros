@@ -1,3 +1,4 @@
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 // stable Account.type identifiers per the schema. uses provenance over Account.source which is a label.
@@ -23,12 +24,21 @@ export function AccountIcons({ accounts, className }: AccountIconsProps) {
         const icon = ACCOUNT_ICONS[account.type]
         const label = icon?.label ?? account.source
         return (
-          <li key={account.type} title={label}>
-            {icon ? (
-              <img src={icon.src} alt={label} className="size-5 rounded-sm object-contain" />
-            ) : (
-              <span className="text-muted-foreground text-xs">{label}</span>
-            )}
+          <li key={account.type}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {icon ? (
+                  // span wrapper so Radix Slot has a real element to attach a ref to;
+                  // raw <img /> doesn't accept refs reliably.
+                  <span className="inline-flex">
+                    <img src={icon.src} alt={label} className="size-5 rounded-sm object-contain" />
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground text-xs">{label}</span>
+                )}
+              </TooltipTrigger>
+              <TooltipContent>{label}</TooltipContent>
+            </Tooltip>
           </li>
         )
       })}

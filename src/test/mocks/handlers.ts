@@ -1,5 +1,11 @@
 import { graphql, HttpResponse } from 'msw'
-import type { EmployeeFilter, EmployeesQuery, FilterOptionsQuery } from '@/lib/apollo/generated'
+import type {
+  EmployeeFilter,
+  EmployeeQuery,
+  EmployeeQueryVariables,
+  EmployeesQuery,
+  FilterOptionsQuery,
+} from '@/lib/apollo/generated'
 import { employeeFixtures, makeEmployeesResponse } from './fixtures'
 
 type EmployeesVariables = {
@@ -11,12 +17,21 @@ type EmployeesVariables = {
 
 type EmployeeRow = EmployeesQuery['employees']['edges'][number]['node']
 
+// single-employee handler — used when the detail panel fetches on hard refresh (cache empty).
+export function employeeDetailHandler(employeeRows: EmployeeRow[]) {
+  return graphql.query<EmployeeQuery, EmployeeQueryVariables>('Employee', ({ variables }) => {
+    const employee = employeeRows.find((e) => e.id === variables.id) ?? null
+    return HttpResponse.json({ data: { __typename: 'Query' as const, employee } })
+  })
+}
+
 // default success handlers. tests opt into other modes (error, empty, paged) via server.use(...).
 export const handlers = [
   graphql.query<EmployeesQuery>('Employees', () => {
     return HttpResponse.json({ data: makeEmployeesResponse(employeeFixtures) })
   }),
   filterOptionsHandler(employeeFixtures),
+  employeeDetailHandler(employeeFixtures),
 ]
 
 // search-aware handler that filters fixtures by case-insensitive name match and the
@@ -99,14 +114,20 @@ export function employeesErrorHandler() {
   })
 }
 
-// pageable handler with numeric-index cursors so tests can assert exact pagination.
+// pageable handler whose cursor format matches the mock-server's btoa("cursor:<index>") encoding.
 export function employeesPagedHandler(
   employeeRows: EmployeeRow[],
   options: { pageSize?: number } = {},
 ) {
   const pageSize = options.pageSize ?? 2
+  const encodeCursor = (index: number) => btoa(`cursor:${index}`)
   return graphql.query<EmployeesQuery, EmployeesVariables>('Employees', ({ variables }) => {
-    const startIndex = variables.after ? Number.parseInt(variables.after, 10) + 1 : 0
+    let startIndex = 0
+    if (variables.after) {
+      // decode base64 cursor: btoa("cursor:<lastIndexOfPriorPage>") → parse the index.
+      const lastIndex = Number.parseInt(atob(variables.after).replace('cursor:', ''), 10)
+      startIndex = Number.isNaN(lastIndex) ? 0 : lastIndex + 1
+    }
     const pageRows = employeeRows.slice(startIndex, startIndex + pageSize)
     const lastIndex = startIndex + pageRows.length - 1
     const pageResponse: EmployeesQuery = {
@@ -114,17 +135,17 @@ export function employeesPagedHandler(
       employees: {
         __typename: 'EmployeeConnection',
         totalCount: employeeRows.length,
-        edges: pageRows.map((employee, index) => ({
+        edges: pageRows.map((employee, offset) => ({
           __typename: 'EmployeeEdge',
-          cursor: String(startIndex + index),
+          cursor: encodeCursor(startIndex + offset),
           node: employee,
         })),
         pageInfo: {
           __typename: 'PageInfo',
           hasNextPage: lastIndex < employeeRows.length - 1,
           hasPreviousPage: startIndex > 0,
-          startCursor: pageRows.length > 0 ? String(startIndex) : null,
-          endCursor: pageRows.length > 0 ? String(lastIndex) : null,
+          startCursor: pageRows.length > 0 ? encodeCursor(startIndex) : null,
+          endCursor: pageRows.length > 0 ? encodeCursor(lastIndex) : null,
         },
       },
     }

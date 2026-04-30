@@ -6,8 +6,10 @@ query Employees($first: Int = 10, $after: String, $search: String, $filter: Empl
         id
         uid
         name
+        email
         photoUrl
         trackingStatus
+        trackingCategory
         teams {
           id
           uid
