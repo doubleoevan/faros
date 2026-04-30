@@ -162,7 +162,7 @@ describe('EmployeesDashboard', () => {
 
     const panel = await screen.findByRole('complementary', { name: /employee details/i })
     expect(panel).toHaveTextContent('Lando Calrissian')
-    expect(screen.getByTestId('ai-insights-mount')).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: /ai insights/i })).toBeInTheDocument()
     // nuqs throttles URL writes — wait for the flush before asserting.
     await waitFor(() => {
       expect(window.location.search).toContain('view=emp_1')

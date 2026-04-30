@@ -1,4 +1,4 @@
-export { getAiConsentToken, clearAiConsentToken } from './aiConsent'
+export { getAiConsentToken, clearAiConsentToken, hasValidAiConsentToken } from './aiConsent'
 export { fetchInsights, InsightsFetchError } from './fetcher'
 export type { InsightsErrorKind } from './fetcher'
 export { filterPii, containsPii } from './pii'

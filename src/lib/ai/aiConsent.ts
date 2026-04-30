@@ -48,6 +48,11 @@ export async function getAiConsentToken(): Promise<string> {
   return cachedToken.token
 }
 
+/** Returns true if a valid consent token is already cached; does not fetch a new one. */
+export function hasValidAiConsentToken(): boolean {
+  return cachedToken !== null && isTokenFresh(cachedToken)
+}
+
 /** Clears the in-memory consent token, triggering a fresh fetch on the next call. */
 export function clearAiConsentToken(): void {
   cachedToken = null

@@ -8,6 +8,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 import type { EmployeeQuery } from '@/lib/apollo/generated'
 import { EmployeeDocument } from '@/lib/apollo/generated'
 import { cn, toInitials } from '@/lib/utils'
+import { useFeatureFlag } from '@/lib/feature-flags'
+import { useAiConsent } from '@/lib/hooks/useAiConsent'
+import { emit, events } from '@/lib/telemetry'
+import { AiConsentPrompt } from '@/components/ai/AiConsentPrompt'
 import { AccountIcons } from './AccountIcons'
 import { EmployeeStatusBadge } from './EmployeeStatusBadge'
 
@@ -98,18 +102,87 @@ function EmployeeDetailContents({
           value={<AccountIcons accounts={employee.accounts} />}
         />
       </div>
-      {/* Phase 2 mount point — AI insights component lands here once Task 11+ ships. */}
+      <AiInsightsSection employee={employee} />
+    </>
+  )
+}
+
+function AiInsightsSection({ employee }: { employee: Employee }) {
+  const isAiEnabled = useFeatureFlag('ai-insights')
+
+  useEffect(() => {
+    emit(events.aiFlagEvaluated(isAiEnabled))
+  }, [isAiEnabled])
+
+  if (!isAiEnabled) {
+    return (
       <section
         aria-label="AI insights"
-        data-testid="ai-insights-mount"
         className="border-muted-foreground/30 bg-muted/40 mx-4 rounded-md border border-dashed p-4 text-sm"
       >
         <h3 className="text-foreground font-medium">AI insights</h3>
-        <p className="text-muted-foreground mt-1">
-          This is where AI-generated activity insights for {displayName} will appear (Phase 2).
+        <p className="text-muted-foreground mt-1">AI-powered insights are not available.</p>
+      </section>
+    )
+  }
+
+  return <AiConsentGate employee={employee} />
+}
+
+function AiConsentGate({ employee }: { employee: Employee }) {
+  const { consentStatus, handleConsentGrant, handleConsentDeny } = useAiConsent()
+  const isLoading = consentStatus === 'requesting'
+
+  if (consentStatus === 'idle' || consentStatus === 'requesting') {
+    return (
+      <AiConsentPrompt
+        isLoading={isLoading}
+        onConsentGrant={handleConsentGrant}
+        onConsentDeny={handleConsentDeny}
+        className="mx-4"
+      />
+    )
+  }
+
+  if (consentStatus === 'denied') {
+    return (
+      <section
+        aria-label="AI insights"
+        className="border-muted-foreground/30 bg-muted/40 mx-4 rounded-md border border-dashed p-4 text-sm"
+      >
+        <p className="text-muted-foreground">
+          AI insights are disabled for this session. Reopen the panel to enable them.
         </p>
       </section>
-    </>
+    )
+  }
+
+  if (consentStatus === 'error') {
+    return (
+      <section
+        aria-label="AI insights"
+        className="border-destructive/40 bg-destructive/5 mx-4 flex flex-col gap-3 rounded-md border border-dashed p-4 text-sm"
+      >
+        <p className="text-muted-foreground">Could not authorize AI insights.</p>
+        <Button size="sm" variant="outline" onClick={handleConsentGrant}>
+          Try again
+        </Button>
+      </section>
+    )
+  }
+
+  // granted — Task 13 replaces this placeholder with <InsightsPanel>
+  return (
+    <section
+      aria-label="AI insights"
+      data-testid="ai-insights-granted"
+      className="border-muted-foreground/30 bg-muted/40 mx-4 rounded-md border border-dashed p-4 text-sm"
+    >
+      <h3 className="text-foreground font-medium">AI Activity Insights</h3>
+      <p className="text-muted-foreground mt-1">
+        Loading insights for {employee.name ?? 'this employee'}…
+      </p>
+    </section>
   )
 }
 
