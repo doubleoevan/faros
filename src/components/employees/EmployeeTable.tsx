@@ -1,4 +1,5 @@
 import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs'
+import { useMemo } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -16,6 +17,8 @@ import { cn } from '@/lib/utils'
 import { AccountIcons } from './AccountIcons'
 import { EmployeePagination } from './EmployeePagination'
 import { EmployeeStatusBadge } from './EmployeeStatusBadge'
+import { nextSortValue, sortDirectionForField } from './sort'
+import { SortableTableHead } from './SortableTableHead'
 
 export const EMPLOYEES_PAGE_SIZE = 25
 const SEARCH_DEBOUNCE_MS = 300
@@ -35,6 +38,7 @@ export function EmployeeTable({ className }: { className?: string }) {
   const [teams] = useQueryState('team', parseAsArrayOf(parseAsString).withDefault([]))
   const [statuses] = useQueryState('status', parseAsArrayOf(parseAsString).withDefault([]))
   const [accountTypes] = useQueryState('account', parseAsArrayOf(parseAsString).withDefault([]))
+  const [sort, setSort] = useQueryState('sort', parseAsString)
   const currentCursor = cursors.length > 0 ? (cursors[cursors.length - 1] ?? null) : null
 
   // Apollo dedupes identical variable shapes, so passing `undefined` keeps cache slots stable
@@ -55,8 +59,18 @@ export function EmployeeTable({ className }: { className?: string }) {
     filter,
   })
 
+  // schema has no orderBy arg — sort is client-side on the visible page only. see DEC.
+  const employees = useMemo(
+    () =>
+      sortEmployees(
+        data?.employees.edges.map((edge) => edge.node),
+        sort,
+      ),
+    [data?.employees.edges, sort],
+  )
+
   const totalCount = data?.employees.totalCount ?? 0
-  const currentPageSize = data?.employees.edges.length ?? 0
+  const currentPageSize = employees.length
   // assumes prior pages were full; resolver guarantees that outside the last page.
   const pageOffset = cursors.length * EMPLOYEES_PAGE_SIZE
   const pageStart = totalCount === 0 || currentPageSize === 0 ? 0 : pageOffset + 1
@@ -80,20 +94,38 @@ export function EmployeeTable({ className }: { className?: string }) {
     await setCursors(cursors.slice(0, -1))
   }
 
+  const onSort = (field: string) => () => {
+    void setSort(nextSortValue(sort, field))
+  }
+
   return (
     <div className={cn('rounded-md border', className)}>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[32%]">Name</TableHead>
-            <TableHead className="w-[18%]">Tracking Status</TableHead>
+            <SortableTableHead
+              field="name"
+              currentSort={sort}
+              onSort={onSort('name')}
+              className="w-[32%]"
+            >
+              Name
+            </SortableTableHead>
+            <SortableTableHead
+              field="trackingStatus"
+              currentSort={sort}
+              onSort={onSort('trackingStatus')}
+              className="w-[18%]"
+            >
+              Tracking Status
+            </SortableTableHead>
             <TableHead className="w-[28%]">Teams</TableHead>
             <TableHead className="w-[22%]">Accounts Connected</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           <EmployeeTableContents
-            data={data}
+            employees={employees}
             isLoading={loading && !data}
             hasError={Boolean(error) && !data}
           />
@@ -115,11 +147,11 @@ export function EmployeeTable({ className }: { className?: string }) {
 }
 
 function EmployeeTableContents({
-  data,
+  employees,
   isLoading,
   hasError,
 }: {
-  data: EmployeesQuery | undefined
+  employees: EmployeeRow[]
   isLoading: boolean
   hasError: boolean
 }) {
@@ -137,8 +169,7 @@ function EmployeeTableContents({
       </TableRow>
     )
   }
-  const edges = data?.employees.edges ?? []
-  if (edges.length === 0) {
+  if (employees.length === 0) {
     return (
       <TableRow>
         <TableCell colSpan={COLUMN_COUNT} className="py-10 text-center">
@@ -149,11 +180,52 @@ function EmployeeTableContents({
   }
   return (
     <>
-      {edges.map((edge) => (
-        <EmployeeTableRow key={edge.node.id} employee={edge.node} />
+      {employees.map((employee) => (
+        <EmployeeTableRow key={employee.id} employee={employee} />
       ))}
     </>
   )
+}
+
+function sortEmployees(employees: EmployeeRow[] | undefined, sort: string | null): EmployeeRow[] {
+  if (!employees) {
+    return []
+  }
+  if (!sort) {
+    return employees
+  }
+  const ascName = sortDirectionForField(sort, 'name')
+  const ascStatus = sortDirectionForField(sort, 'trackingStatus')
+  if (ascName !== null) {
+    return [...employees].sort((first, second) =>
+      compareNullableStrings(first.name, second.name, ascName),
+    )
+  }
+  if (ascStatus !== null) {
+    return [...employees].sort((first, second) =>
+      compareNullableStrings(first.trackingStatus, second.trackingStatus, ascStatus),
+    )
+  }
+  return employees
+}
+
+function compareNullableStrings(
+  first: string | null | undefined,
+  second: string | null | undefined,
+  direction: 'asc' | 'desc',
+): number {
+  // null/undefined sort to the end regardless of direction.
+  if (!first && !second) {
+    return 0
+  }
+  if (!first) {
+    return 1
+  }
+  if (!second) {
+    return -1
+  }
+  const comparison = first.localeCompare(second)
+  return direction === 'asc' ? comparison : -comparison
 }
 
 function EmployeeTableRow({ employee }: { employee: EmployeeRow }) {

@@ -39,6 +39,38 @@ describe('EmployeeTable', () => {
   })
 })
 
+describe('EmployeeTable sorting', () => {
+  it('cycles the Name header through asc, desc, and unsorted', async () => {
+    const user = userEvent.setup()
+    render(<EmployeeTable />)
+
+    await screen.findByText('Ada Lovelace')
+    const nameHeader = screen.getByRole('button', { name: /name/i })
+
+    await user.click(nameHeader)
+    await waitFor(() => {
+      expect(window.location.search).toContain('sort=name')
+      expect(window.location.search).not.toContain('sort=-')
+    })
+    let rows = screen.getAllByRole('row').slice(1)
+    expect(rows[0]).toHaveTextContent('Ada Lovelace')
+    expect(rows[1]).toHaveTextContent('Grace Hopper')
+
+    await user.click(nameHeader)
+    await waitFor(() => {
+      expect(window.location.search).toContain('sort=-name')
+    })
+    rows = screen.getAllByRole('row').slice(1)
+    expect(rows[0]).toHaveTextContent('Grace Hopper')
+    expect(rows[1]).toHaveTextContent('Ada Lovelace')
+
+    await user.click(nameHeader)
+    await waitFor(() => {
+      expect(window.location.search).not.toContain('sort=')
+    })
+  })
+})
+
 describe('EmployeeTable pagination', () => {
   it('shows the page range, advances on Next, and walks back on Previous', async () => {
     server.use(employeesPagedHandler(paginationFixtures, { pageSize: EMPLOYEES_PAGE_SIZE }))
