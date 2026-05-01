@@ -11,7 +11,9 @@ const cache = new Map<string, CacheEntry>()
 // deduplicates concurrent fetches for the same employee (prevents StrictMode double-fetch)
 const pendingFetches = new Map<string, Promise<AiInsightsResponse>>()
 
-/** Returns the cached insight for an employee, or null if missing or expired. */
+/**
+ * Returns the cached insight for an employee, or null if missing or expired.
+ */
 export function getCachedInsight(employeeId: string): AiInsightsResponse | null {
   const entry = cache.get(employeeId)
   if (!entry) {
