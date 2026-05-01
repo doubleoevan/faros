@@ -63,17 +63,17 @@ export function useEmployeeInsights(employeeId: string): UseEmployeeInsightsResu
     emit(events.aiInsightsRequested(employeeId))
 
     // serve from cache if available to avoid a loading flash and unnecessary network call
-    const cached = getCachedInsight(employeeId)
-    if (cached) {
-      const processed = processInsight(cached)
-      emit(events.aiInsightsSucceeded(employeeId, 0, cached.confidence))
+    const cachedInsight = getCachedInsight(employeeId)
+    if (cachedInsight) {
+      const processed = processInsight(cachedInsight)
+      emit(events.aiInsightsSucceeded(employeeId, 0, cachedInsight.confidence))
       if (processed.isLowConfidence) {
-        emit(events.aiInsightsLowConfidence(employeeId, cached.confidence))
+        emit(events.aiInsightsLowConfidence(employeeId, cachedInsight.confidence))
       }
       if (processed.hasPii) {
         emit(events.aiInsightsPiiFiltered(employeeId))
       }
-      setInsightsState({ status: 'success', insight: cached, ...processed })
+      setInsightsState({ status: 'success', insight: cachedInsight, ...processed })
       return
     }
 
