@@ -195,4 +195,29 @@ describe('InsightsPanel', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Not helpful' }))
     expect(screen.getByText(/thanks for your feedback/i)).toBeInTheDocument()
   })
+
+  it('serves a returning employee from cache without a second network call', async () => {
+    const emp02Insight = {
+      ...validInsight,
+      employeeId: 'emp_02',
+      employeeUid: 'ron',
+      summary: 'Ron Weasley has been contributing to the backend.',
+    }
+    vi.mocked(fetchInsights).mockImplementation((id) =>
+      Promise.resolve(id === 'emp_02' ? emp02Insight : validInsight),
+    )
+
+    const { rerender } = render(<InsightsPanel employeeId="emp_01" onAuthExpired={vi.fn()} />)
+    await waitFor(() => expect(screen.getByText(/harry potter/i)).toBeInTheDocument())
+    expect(vi.mocked(fetchInsights)).toHaveBeenCalledTimes(1)
+
+    rerender(<InsightsPanel employeeId="emp_02" onAuthExpired={vi.fn()} />)
+    await waitFor(() => expect(screen.getByText(/ron weasley/i)).toBeInTheDocument())
+    expect(vi.mocked(fetchInsights)).toHaveBeenCalledTimes(2)
+
+    rerender(<InsightsPanel employeeId="emp_01" onAuthExpired={vi.fn()} />)
+    await waitFor(() => expect(screen.getByText(/harry potter/i)).toBeInTheDocument())
+    // emp_01 served from cache — fetch count must not increase
+    expect(vi.mocked(fetchInsights)).toHaveBeenCalledTimes(2)
+  })
 })

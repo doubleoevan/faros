@@ -1,6 +1,12 @@
 export { getAiConsentToken, clearAiConsentToken, hasValidAiConsentToken } from './aiConsent'
 export { fetchInsights, InsightsFetchError } from './fetcher'
 export type { InsightsErrorType } from './fetcher'
+export {
+  getCachedInsight,
+  getOrFetchInsight,
+  clearCachedInsight,
+  clearInsightsCache,
+} from './insightsCache'
 export { filterPii, containsPii } from './pii'
 export type { PiiFilterResult } from './pii'
 export {

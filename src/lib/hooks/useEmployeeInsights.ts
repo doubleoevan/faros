@@ -3,6 +3,9 @@ import {
   fetchInsights,
   filterPii,
   getAiConsentToken,
+  getCachedInsight,
+  getOrFetchInsight,
+  clearCachedInsight,
   InsightsFetchError,
   LOW_CONFIDENCE_THRESHOLD,
 } from '@/lib/ai'
@@ -16,6 +19,13 @@ function computeResponseHash(text: string): string {
     hash = (Math.imul(31, hash) + character.charCodeAt(0)) | 0
   }
   return (hash >>> 0).toString(16)
+}
+
+function processInsight(insight: AiInsightsResponse) {
+  const { text: summary, hasPii } = filterPii(insight.summary)
+  const isLowConfidence = insight.confidence <= LOW_CONFIDENCE_THRESHOLD
+  const responseHash = computeResponseHash(insight.summary)
+  return { summary, hasPii, isLowConfidence, responseHash }
 }
 
 type InsightsState =
@@ -48,41 +58,55 @@ export function useEmployeeInsights(employeeId: string): UseEmployeeInsightsResu
   const [retryKey, setRetryKey] = useState(0)
 
   useEffect(() => {
-    setInsightsState({ status: 'loading' })
     let isCancelled = false
 
+    emit(events.aiInsightsRequested(employeeId))
+
+    // serve from cache if available to avoid a loading flash and unnecessary network call
+    const cached = getCachedInsight(employeeId)
+    if (cached) {
+      const processed = processInsight(cached)
+      emit(events.aiInsightsSucceeded(employeeId, 0, cached.confidence))
+      if (processed.isLowConfidence) {
+        emit(events.aiInsightsLowConfidence(employeeId, cached.confidence))
+      }
+      if (processed.hasPii) {
+        emit(events.aiInsightsPiiFiltered(employeeId))
+      }
+      setInsightsState({ status: 'success', insight: cached, ...processed })
+      return
+    }
+
+    setInsightsState({ status: 'loading' })
+
+    // call getOrFetchInsight synchronously (before any await) so that StrictMode's
+    // second effect invocation finds the pending promise in the map and reuses it
+    // instead of starting a duplicate network request.
+    const startTime = Date.now()
+    const insightPromise = getOrFetchInsight(employeeId, async () => {
+      const token = await getAiConsentToken()
+      return fetchInsights(employeeId, token)
+    })
+
     async function load(): Promise<void> {
-      const startTime = Date.now()
-      emit(events.aiInsightsRequested(employeeId))
       try {
-        const token = await getAiConsentToken()
-        const insight = await fetchInsights(employeeId, token)
+        const insight = await insightPromise
 
         if (isCancelled) {
           return
         }
-
         const latencyMs = Date.now() - startTime
-        const { text: summary, hasPii } = filterPii(insight.summary)
-        const isLowConfidence = insight.confidence <= LOW_CONFIDENCE_THRESHOLD
-        const responseHash = computeResponseHash(insight.summary)
+        const processed = processInsight(insight)
 
         emit(events.aiInsightsSucceeded(employeeId, latencyMs, insight.confidence))
-        if (isLowConfidence) {
+        if (processed.isLowConfidence) {
           emit(events.aiInsightsLowConfidence(employeeId, insight.confidence))
         }
-        if (hasPii) {
+        if (processed.hasPii) {
           emit(events.aiInsightsPiiFiltered(employeeId))
         }
 
-        setInsightsState({
-          status: 'success',
-          insight,
-          summary,
-          hasPii,
-          isLowConfidence,
-          responseHash,
-        })
+        setInsightsState({ status: 'success', insight, ...processed })
       } catch (error) {
         if (isCancelled) {
           return
@@ -115,6 +139,7 @@ export function useEmployeeInsights(employeeId: string): UseEmployeeInsightsResu
   }, [employeeId, retryKey])
 
   function handleInsightRetry(): void {
+    clearCachedInsight(employeeId)
     setRetryKey((key) => key + 1)
   }
 
