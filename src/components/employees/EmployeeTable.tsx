@@ -94,7 +94,7 @@ export function EmployeeTable({ className }: { className?: string }) {
         }
       : undefined
 
-  const { data, loading, error } = useEmployees({
+  const { data, loading, error, refetch } = useEmployees({
     first: EMPLOYEES_PAGE_SIZE,
     after: currentCursor,
     search: debouncedSearch || undefined,
@@ -134,6 +134,10 @@ export function EmployeeTable({ className }: { className?: string }) {
       return
     }
     await setCursors(cursors.slice(0, -1))
+  }
+
+  const handleRetry = () => {
+    void refetch()
   }
 
   const handleTableSort = (field: string) => () => {
@@ -189,6 +193,7 @@ export function EmployeeTable({ className }: { className?: string }) {
             employees={employees}
             isLoading={loading && !data}
             hasError={Boolean(error) && !data}
+            onRetry={handleRetry}
           />
         </TableBody>
       </Table>
@@ -214,10 +219,12 @@ function EmployeeTableContents({
   employees,
   isLoading,
   hasError,
+  onRetry,
 }: {
   employees: EmployeeRow[]
   isLoading: boolean
   hasError: boolean
+  onRetry: () => void
 }) {
   if (isLoading) {
     return <EmployeeTablePlaceholderRows />
@@ -226,8 +233,11 @@ function EmployeeTableContents({
     return (
       <TableRow>
         <TableCell colSpan={COLUMN_COUNT} className="py-10 text-center">
-          <div role="alert" className="text-destructive text-sm">
-            Failed to load employees. Please retry.
+          <div role="alert" className="flex flex-col items-center gap-3">
+            <span className="text-destructive text-sm">Failed to load employees.</span>
+            <Button variant="outline" size="sm" onClick={onRetry}>
+              Try again
+            </Button>
           </div>
         </TableCell>
       </TableRow>

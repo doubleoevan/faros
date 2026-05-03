@@ -1,5 +1,6 @@
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
+import { graphql, HttpResponse } from 'msw'
 import { render, screen, waitFor } from '@/test/render'
 import { server } from '@/test/mocks/server'
 import {
@@ -7,7 +8,7 @@ import {
   employeesErrorHandler,
   employeesPagedHandler,
 } from '@/test/mocks/handlers'
-import { paginationFixtures } from '@/test/mocks/fixtures'
+import { employeeFixtures, makeEmployeesResponse, paginationFixtures } from '@/test/mocks/fixtures'
 import { EMPLOYEES_PAGE_SIZE, EmployeeTable } from './EmployeeTable'
 
 const TOTAL_FIXTURES = paginationFixtures.length
@@ -30,11 +31,37 @@ describe('EmployeeTable', () => {
     expect(await screen.findByText(/no employees found/i)).toBeInTheDocument()
   })
 
-  it('renders the error state when the request fails', async () => {
+  it('renders the error state with a retry button when the request fails', async () => {
     server.use(employeesErrorHandler())
     render(<EmployeeTable />)
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent(/failed to load employees/i)
+    })
+    expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument()
+  })
+
+  it('clicking Try again re-fetches and renders employees on success', async () => {
+    let requestCount = 0
+    server.use(
+      graphql.query('Employees', () => {
+        requestCount++
+        if (requestCount === 1) {
+          return HttpResponse.json({ errors: [{ message: 'server error' }] }, { status: 500 })
+        }
+        return HttpResponse.json({ data: makeEmployeesResponse(employeeFixtures) })
+      }),
+    )
+    const user = userEvent.setup()
+    render(<EmployeeTable />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toBeInTheDocument()
+    })
+
+    await user.click(screen.getByRole('button', { name: /try again/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Lando Calrissian')).toBeInTheDocument()
     })
   })
 })
