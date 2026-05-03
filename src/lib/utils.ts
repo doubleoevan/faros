@@ -9,6 +9,13 @@ export function cn(...inputs: ClassValue[]): string {
 }
 
 /**
+ * Compile-time exhaustiveness check; place in the default branch of a switch or if-chain for a discriminated union.
+ */
+export function assertNever(value: never): never {
+  throw new Error(`Unhandled variant: ${String(value)}`)
+}
+
+/**
  * Returns first+last initials from a name; "?" when empty. Single names produce one letter.
  */
 export function toInitials(name: string | null | undefined): string {

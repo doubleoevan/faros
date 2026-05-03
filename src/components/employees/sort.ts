@@ -1,3 +1,5 @@
+import { assertNever } from '@/lib/utils'
+
 export type SortDirection = 'asc' | 'desc' | null
 
 /**
@@ -24,5 +26,8 @@ export function nextSortValue(currentSort: string | null, field: string): string
   if (direction === 'asc') {
     return `-${field}`
   }
-  return null
+  if (direction === 'desc') {
+    return null
+  }
+  return assertNever(direction)
 }

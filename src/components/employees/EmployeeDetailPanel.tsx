@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { EmployeeQuery } from '@/lib/apollo/generated'
 import { EmployeeDocument } from '@/lib/apollo/generated'
-import { cn, toInitials } from '@/lib/utils'
+import { cn, toInitials, assertNever } from '@/lib/utils'
 import { useFeatureFlag } from '@/lib/feature-flags'
 import { useAiConsent } from '@/lib/hooks/useAiConsent'
 import { emit, events } from '@/lib/telemetry'
@@ -185,7 +185,11 @@ function AiConsentGate({ employee }: { employee: Employee }) {
     )
   }
 
-  return <InsightsPanel employeeId={employee.id} onAuthExpired={handleResetConsent} />
+  if (consentStatus === 'granted') {
+    return <InsightsPanel employeeId={employee.id} onAuthExpired={handleResetConsent} />
+  }
+
+  return assertNever(consentStatus)
 }
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {

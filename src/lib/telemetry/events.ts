@@ -38,8 +38,12 @@ export const events = {
     makeEvent('ai.insights.rate_limited', { employeeId, retryAfterSeconds }),
   aiInsightsFailed: (employeeId: string, type: string) =>
     makeEvent('ai.insights.failed', { employeeId, type }),
-  aiFeedbackSubmitted: (employeeId: string, rating: 'up' | 'down', responseHash: string) =>
-    makeEvent('ai.feedback.submitted', { employeeId, rating, responseHash }),
+  aiFeedbackSubmitted: (
+    employeeId: string,
+    rating: 'up' | 'down',
+    confidence: number,
+    model: string,
+  ) => makeEvent('ai.feedback.submitted', { employeeId, rating, confidence, model }),
   errorBoundaryTriggered: (boundary: string, errorMessage: string) =>
     makeEvent('error.boundary.triggered', { boundary, errorMessage }),
 }

@@ -182,8 +182,8 @@ describe('InsightsPanel', () => {
       .mock.calls.find((call) => call[0].name === 'ai.feedback.submitted')
     expect(feedbackCall).toBeDefined()
     expect(feedbackCall?.[0].properties?.rating).toBe('up')
-    expect(typeof feedbackCall?.[0].properties?.responseHash).toBe('string')
-    expect((feedbackCall?.[0].properties?.responseHash as string).length).toBeGreaterThan(0)
+    expect(typeof feedbackCall?.[0].properties?.confidence).toBe('number')
+    expect(typeof feedbackCall?.[0].properties?.model).toBe('string')
   })
 
   it('shows thank-you confirmation after feedback is submitted', async () => {

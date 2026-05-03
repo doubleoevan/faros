@@ -1,4 +1,6 @@
+import type { EmployeeId } from '@/lib/apollo/types'
 import { aiInsightsResponseSchema, rateLimitBodySchema, type AiInsightsResponse } from './schemas'
+import type { ConsentToken } from './aiConsent'
 
 const graphqlUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/graphql'
 const AI_BASE_URL = new URL(graphqlUrl).origin
@@ -38,8 +40,8 @@ export class InsightsFetchError extends Error {
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
 async function doFetch(
-  employeeId: string,
-  consentToken: string,
+  employeeId: EmployeeId,
+  consentToken: ConsentToken,
   signal: AbortSignal,
 ): Promise<Response> {
   return fetch(`${AI_BASE_URL}/api/ai/insights/${encodeURIComponent(employeeId)}`, {
@@ -49,8 +51,8 @@ async function doFetch(
 }
 
 async function tryFetch(
-  employeeId: string,
-  consentToken: string,
+  employeeId: EmployeeId,
+  consentToken: ConsentToken,
   controller: AbortController,
 ): Promise<Response> {
   try {
@@ -93,7 +95,7 @@ async function parseResponse(response: Response): Promise<AiInsightsResponse> {
 }
 
 // each attempt gets its own controller and timer so the retry has a full 10s budget
-async function attemptFetch(employeeId: string, consentToken: string): Promise<Response> {
+async function attemptFetch(employeeId: EmployeeId, consentToken: ConsentToken): Promise<Response> {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS)
   try {
@@ -107,8 +109,8 @@ async function attemptFetch(employeeId: string, consentToken: string): Promise<R
  * Fetches AI-generated insights for an employee; retries once on 5xx, aborts after 10s per attempt.
  */
 export async function fetchInsights(
-  employeeId: string,
-  consentToken: string,
+  employeeId: EmployeeId,
+  consentToken: ConsentToken,
 ): Promise<AiInsightsResponse> {
   const firstResponse = await attemptFetch(employeeId, consentToken)
 

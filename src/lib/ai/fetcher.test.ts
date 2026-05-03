@@ -1,9 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { delay, http, HttpResponse } from 'msw'
 import { server } from '@/test/mocks/server'
+import type { EmployeeId, ConsentToken } from '@/lib/ai'
 import { InsightsFetchError, fetchInsights } from './fetcher'
 
 const INSIGHTS_URL = 'http://localhost:4000/api/ai/insights/:employeeId'
+
+// test-controlled ids and tokens
+const EMP_01 = 'emp_01' as EmployeeId
+const DOES_NOT_EXIST = 'does-not-exist' as EmployeeId
+const VALID_TOKEN = 'valid-token' as ConsentToken
+const NO_TOKEN = 'no-token' as ConsentToken
+const EXPIRED_TOKEN = 'expired-token' as ConsentToken
+const MY_CONSENT_TOKEN = 'my-consent-token' as ConsentToken
 
 const validInsightsResponse = {
   employeeId: 'emp_01',
@@ -23,7 +32,7 @@ describe('fetchInsights', () => {
   it('returns a Zod-validated InsightsResponse on success', async () => {
     server.use(http.get(INSIGHTS_URL, () => HttpResponse.json(validInsightsResponse)))
 
-    const result = await fetchInsights('emp_01', 'valid-token')
+    const result = await fetchInsights(EMP_01, VALID_TOKEN)
     expect(result).toEqual(validInsightsResponse)
   })
 
@@ -36,7 +45,7 @@ describe('fetchInsights', () => {
       }),
     )
 
-    await fetchInsights('emp_01', 'my-consent-token')
+    await fetchInsights(EMP_01, MY_CONSENT_TOKEN)
     expect(capturedToken).toBe('my-consent-token')
   })
 
@@ -57,7 +66,7 @@ describe('fetchInsights', () => {
         }),
       )
 
-      const fetchPromise = fetchInsights('emp_01', 'valid-token')
+      const fetchPromise = fetchInsights(EMP_01, VALID_TOKEN)
       // advance past RETRY_DELAY_MS (1s) but not the overall timeout (10s)
       await vi.advanceTimersByTimeAsync(1_001)
 
@@ -73,7 +82,7 @@ describe('fetchInsights', () => {
         ),
       )
 
-      const fetchPromise = fetchInsights('emp_01', 'valid-token')
+      const fetchPromise = fetchInsights(EMP_01, VALID_TOKEN)
       // attach before advancing so the rejection is handled
       fetchPromise.catch(() => {})
       await vi.advanceTimersByTimeAsync(1_001)
@@ -94,7 +103,7 @@ describe('fetchInsights', () => {
       }),
     )
 
-    await expect(fetchInsights('emp_01', 'no-token')).rejects.toMatchObject({
+    await expect(fetchInsights(EMP_01, NO_TOKEN)).rejects.toMatchObject({
       type: 'unauthorized',
     })
     expect(requestCount).toBe(1)
@@ -110,7 +119,7 @@ describe('fetchInsights', () => {
       ),
     )
 
-    await expect(fetchInsights('emp_01', 'expired-token')).rejects.toMatchObject({
+    await expect(fetchInsights(EMP_01, EXPIRED_TOKEN)).rejects.toMatchObject({
       type: 'unauthorized',
     })
   })
@@ -125,7 +134,7 @@ describe('fetchInsights', () => {
       ),
     )
 
-    await expect(fetchInsights('does-not-exist', 'valid-token')).rejects.toMatchObject({
+    await expect(fetchInsights(DOES_NOT_EXIST, VALID_TOKEN)).rejects.toMatchObject({
       type: 'not_found',
     })
   })
@@ -140,7 +149,7 @@ describe('fetchInsights', () => {
       ),
     )
 
-    await expect(fetchInsights('emp_01', 'valid-token')).rejects.toMatchObject({
+    await expect(fetchInsights(EMP_01, VALID_TOKEN)).rejects.toMatchObject({
       type: 'rate_limited',
       retryAfterSeconds: 32,
     })
@@ -151,7 +160,7 @@ describe('fetchInsights', () => {
       http.get(INSIGHTS_URL, () => HttpResponse.json({ error: 'rate limit' }, { status: 429 })),
     )
 
-    await expect(fetchInsights('emp_01', 'valid-token')).rejects.toMatchObject({
+    await expect(fetchInsights(EMP_01, VALID_TOKEN)).rejects.toMatchObject({
       type: 'rate_limited',
       retryAfterSeconds: 60,
     })
@@ -167,7 +176,7 @@ describe('fetchInsights', () => {
       }),
     )
 
-    const fetchPromise = fetchInsights('emp_01', 'valid-token')
+    const fetchPromise = fetchInsights(EMP_01, VALID_TOKEN)
     // attach before advancing so the rejection is handled
     fetchPromise.catch(() => {})
     await vi.advanceTimersByTimeAsync(10_001)
@@ -178,7 +187,7 @@ describe('fetchInsights', () => {
   it('throws network when fetch itself rejects', async () => {
     server.use(http.get(INSIGHTS_URL, () => HttpResponse.error()))
 
-    await expect(fetchInsights('emp_01', 'valid-token')).rejects.toMatchObject({
+    await expect(fetchInsights(EMP_01, VALID_TOKEN)).rejects.toMatchObject({
       type: 'network',
     })
   })
@@ -186,7 +195,7 @@ describe('fetchInsights', () => {
   it('throws validation when the 200 body does not match the schema', async () => {
     server.use(http.get(INSIGHTS_URL, () => HttpResponse.json({ malformed: true })))
 
-    await expect(fetchInsights('emp_01', 'valid-token')).rejects.toMatchObject({
+    await expect(fetchInsights(EMP_01, VALID_TOKEN)).rejects.toMatchObject({
       type: 'validation',
     })
   })
@@ -198,6 +207,6 @@ describe('fetchInsights', () => {
       ),
     )
 
-    await expect(fetchInsights('emp_01', 'valid-token')).rejects.toBeInstanceOf(InsightsFetchError)
+    await expect(fetchInsights(EMP_01, VALID_TOKEN)).rejects.toBeInstanceOf(InsightsFetchError)
   })
 })

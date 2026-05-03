@@ -1,3 +1,4 @@
+import type { EmployeeId } from '@/lib/apollo/types'
 import type { AiInsightsResponse } from './schemas'
 
 const INSIGHTS_CACHE_TTL_MS = 5 * 60 * 1_000
@@ -7,14 +8,14 @@ type CacheEntry = {
   cachedAt: number
 }
 
-const cache = new Map<string, CacheEntry>()
+const cache = new Map<EmployeeId, CacheEntry>()
 // deduplicates concurrent fetches for the same employee (prevents StrictMode double-fetch)
-const pendingFetches = new Map<string, Promise<AiInsightsResponse>>()
+const pendingFetches = new Map<EmployeeId, Promise<AiInsightsResponse>>()
 
 /**
  * Returns the cached insight for an employee, or null if missing or expired.
  */
-export function getCachedInsight(employeeId: string): AiInsightsResponse | null {
+export function getCachedInsight(employeeId: EmployeeId): AiInsightsResponse | null {
   const entry = cache.get(employeeId)
   if (!entry) {
     return null
@@ -32,7 +33,7 @@ export function getCachedInsight(employeeId: string): AiInsightsResponse | null 
  * Caches the result on success so future calls avoid the network entirely.
  */
 export function getOrFetchInsight(
-  employeeId: string,
+  employeeId: EmployeeId,
   factory: () => Promise<AiInsightsResponse>,
 ): Promise<AiInsightsResponse> {
   const cachedInsight = getCachedInsight(employeeId)
@@ -61,7 +62,7 @@ export function getOrFetchInsight(
 /**
  * Removes the cached insight and any pending fetch for a single employee; call before a manual retry.
  */
-export function clearCachedInsight(employeeId: string): void {
+export function clearCachedInsight(employeeId: EmployeeId): void {
   cache.delete(employeeId)
   pendingFetches.delete(employeeId)
 }

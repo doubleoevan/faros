@@ -1,11 +1,16 @@
 import { getSessionId } from '@/lib/telemetry'
 import { aiConsentResponseSchema } from './schemas'
 
+/**
+ * Branded type for a consent token issued by POST /api/ai/consent.
+ */
+export type ConsentToken = string & { readonly _brand: 'ConsentToken' }
+
 const graphqlUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/graphql'
 const AI_BASE_URL = new URL(graphqlUrl).origin
 
 type CachedToken = {
-  token: string
+  token: ConsentToken
   expiresAt: Date
 }
 
@@ -21,7 +26,7 @@ function isTokenFresh(cached: CachedToken): boolean {
 /**
  * Fetches and caches a consent token; returns the cached token if it is still valid.
  */
-export async function getAiConsentToken(): Promise<string> {
+export async function getAiConsentToken(): Promise<ConsentToken> {
   if (cachedToken !== null && isTokenFresh(cachedToken)) {
     return cachedToken.token
   }
@@ -43,7 +48,7 @@ export async function getAiConsentToken(): Promise<string> {
   }
 
   cachedToken = {
-    token: result.data.consentToken,
+    token: result.data.consentToken as ConsentToken,
     expiresAt: new Date(result.data.expiresAt),
   }
 

@@ -1,9 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
+import type { ConsentToken } from '@/lib/ai'
+
+// test-controlled token
+const TEST_TOKEN = 'test-token' as ConsentToken
 
 vi.mock('@/lib/ai', () => ({
   hasValidAiConsentToken: vi.fn(() => false),
-  getAiConsentToken: vi.fn(() => Promise.resolve('test-token')),
+  getAiConsentToken: vi.fn(() => Promise.resolve(TEST_TOKEN)),
   clearAiConsentToken: vi.fn(),
 }))
 
@@ -24,7 +28,7 @@ describe('useAiConsent', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(hasValidAiConsentToken).mockReturnValue(false)
-    vi.mocked(getAiConsentToken).mockResolvedValue('test-token')
+    vi.mocked(getAiConsentToken).mockResolvedValue(TEST_TOKEN)
   })
 
   it('starts idle when no token is cached', () => {
@@ -73,9 +77,9 @@ describe('useAiConsent', () => {
   })
 
   it('passes through requesting state while the token fetch is in flight', async () => {
-    let resolveToken!: (value: string) => void
+    let resolveToken!: (value: ConsentToken) => void
     vi.mocked(getAiConsentToken).mockReturnValue(
-      new Promise<string>((resolve) => {
+      new Promise<ConsentToken>((resolve) => {
         resolveToken = resolve
       }),
     )
@@ -88,7 +92,7 @@ describe('useAiConsent', () => {
     expect(result.current.consentStatus).toBe('requesting')
 
     await act(async () => {
-      resolveToken('test-token')
+      resolveToken(TEST_TOKEN)
     })
     expect(result.current.consentStatus).toBe('granted')
   })

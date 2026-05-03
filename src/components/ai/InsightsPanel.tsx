@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import type { InsightsErrorType } from '@/lib/ai'
+import type { InsightsErrorType, EmployeeId } from '@/lib/ai'
+import { assertNever } from '@/lib/utils'
 import { useEmployeeInsights } from '@/lib/hooks/useEmployeeInsights'
 import { LowConfidenceBadge } from './LowConfidenceBadge'
 import { InsightsFeedback } from './InsightsFeedback'
@@ -57,24 +58,30 @@ function formatRelativeTime(isoString: string): string {
 }
 
 function errorMessageForType(type: InsightsErrorType): string {
-  if (type === 'timeout') {
-    return 'Insights timed out.'
+  switch (type) {
+    case 'timeout':
+      return 'Insights timed out.'
+    case 'unauthorized':
+      return 'Session expired — re-authorization required.'
+    case 'not_found':
+      return 'No AI insights available for this employee.'
+    case 'rate_limited':
+    case 'server_error':
+    case 'network':
+    case 'validation':
+      return 'Failed to load insights.'
+    default:
+      return assertNever(type)
   }
-  if (type === 'unauthorized') {
-    return 'Session expired — re-authorization required.'
-  }
-  if (type === 'not_found') {
-    return 'No AI insights available for this employee.'
-  }
-  return 'Failed to load insights.'
 }
 
 /**
  * AI-generated activity insights panel with PII filtering, confidence badge, and feedback.
  */
 export function InsightsPanel({ employeeId, onAuthExpired }: InsightsPanelProps) {
-  const { insightsState, handleInsightRetry, handleInsightFeedback } =
-    useEmployeeInsights(employeeId)
+  const { insightsState, handleInsightRetry, handleInsightFeedback } = useEmployeeInsights(
+    employeeId as EmployeeId,
+  )
 
   if (insightsState.status === 'loading') {
     return <InsightsPlaceholder className="mx-4" />
